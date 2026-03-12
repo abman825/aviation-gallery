@@ -1,42 +1,175 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+.container {
   text-align: center;
+  padding: 40px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #fdf2f8; /* ለስላሳ የሮዝ ቀለም */
+  min-height: 100vh;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+h1 {
+  color: #db2777; /* የሴቶች ፋሽን ስሜት የሚሰጥ ቀለም */
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.gallery {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap; /* ስልኮች ላይ ሲታይ ወደ ታች እንዲወርድ */
+  gap: 30px;
+  margin-top: 40px;
 }
 
 .card {
-  padding: 2em;
+  width: 250px;
+  height: 300px;
+  background-color: white;
+  border: 2px solid #fbcfe8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
 }
 
-.read-the-docs {
-  color: #888;
+.card:hover {
+  transform: scale(1.05); /* ሲነኩት ትንሽ እንዲያድግ */
+}
+.navbar {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 30px;
+  padding: 10px;
+}
+
+.navbar button {
+  padding: 8px 16px;
+  background-color: #db2777;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.navbar input {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+/* የሜኑ አቀማመጥ */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  position: absolute;
+  background-color: white;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+  z-index: 1;
+  border-radius: 5px;
+  text-align: left;
+}
+
+.dropdown-content a {
+  color: #db2777;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown-content a:hover {
+  background-color: #fce7f3;
+}
+
+/* ሌሎች የስታይል ማስተካከያዎች */
+.nav-btn {
+  padding: 8px 16px;
+  background-color: #db2777;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.search-box {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+}
+.card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 15px 15px 0 0;
+}
+/* ጋለሪውን የሚያምር ለማድረግ */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* ካርዱ ላይ ሲያርፉ የሚያምር እንቅስቃሴ */
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
+.card img, .card video {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-bottom: 2px solid #f8f8f8;
+}
+
+.card h3 {
+  padding: 10px;
+  font-size: 16px;
+  color: #333;
+}
+
+/* ናቭባር (Navbar) ማስተካከያ */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 30px;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.modal {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal-content {
+  position: relative;
+  max-width: 90%;
+  max-height: 80%;
+}
+.close {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  color: white;
+  font-size: 40px;
+  cursor: pointer;
 }

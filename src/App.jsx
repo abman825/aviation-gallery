@@ -61,13 +61,13 @@ function App() {
         <button className="nav-btn" onClick={() => setIsMenuOpen(!isMenuOpen)}>Menu ▼</button>
         {isMenuOpen && (
           <div className="dropdown-content">
-            <a href="https://t.me/lilmoo_desing13" target="_blank">Telegram</a>
+            <a href="https://t.me/lilmoo_design13" target="_blank">Telegram</a>
           </div>
         )}
         <input type="text" placeholder="Search..." onChange={(e) => setSearchTerm(e.target.value)} className="search-box" />
       </nav>
 
-      <h1>lilmoo የሴቶች ፋሽን ጋለሪ</h1>
+      <h1>lilmoo design</h1>
       
       <div className="category-filter">
         {categories.map(cat => (

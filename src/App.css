@@ -173,3 +173,35 @@ h1 {
   font-size: 40px;
   cursor: pointer;
 }
+/* የጋለሪው ስክሪን ሳይዝ ማስተካከያ */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+/* ለስልክ (ስክሪኑ ከ 600px በታች ከሆነ) */
+@media (max-width: 600px) {
+  .navbar { flex-direction: column; align-items: center; }
+  h1 { font-size: 24px; }
+  .card { width: 100%; }
+}
+
+/* የምስል መጠን ማስተካከያ */
+.card img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* የሜኑ አቀማመጥ */
+.dropdown-content {
+  position: absolute;
+  right: 10px;
+  background: white;
+  border: 1px solid #ddd;
+  padding: 10px;
+  width: 150px;
+}

@@ -389,3 +389,15 @@
   text-align: center;
   color: #9ca3af;
 }
+.footer-images {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.footer-icon {
+  width: 100%; /* እንደ ፍላጎትዎ መጠን ያስተካክሉ */
+  height: 600px;
+  object-fit: cover;
+}

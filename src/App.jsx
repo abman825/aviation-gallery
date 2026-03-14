@@ -1,5 +1,7 @@
 import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import imgAb from './assets/ab.jpg';
+import imgBa from './assets/ba.jpg';
 import './App.css'; 
 
 // ምስሎች
@@ -35,7 +37,7 @@ export default function App() {
       <nav className="navbar">
         <div className="nav-container">
           <div className="nav-content">
-            <div className="logo">ATELIER</div>
+            <div className="logo">lilmoo</div>
             <div className="nav-menu">
               <a href="#home">Home</a>
               <a href="#collections">Collections</a>
@@ -67,7 +69,7 @@ export default function App() {
           <div className="hero-content">
             <h1>Lilmoo Design </h1>
             <p className="hero-subtitle">Contemporary Fashion Design</p>
-            <button className="hero-btn" onClick={() => setShowGallery(true)}>Explore Collections</button>
+            <button className="hero-btn" onClick={() => setShowGallery(true)}>lilmoo Collections</button>
           </div>
         </div>
       </section>
@@ -112,8 +114,12 @@ export default function App() {
       )}
 
       <footer className="footer">
-        <p>&copy; 2026 Atelier. All rights reserved.</p>
-      </footer>
+  <div className="footer-images">
+    <img src={imgAb} alt="Footer logo 1" className="footer-icon" />
+    <img src={imgBa} alt="Footer logo 2" className="footer-icon" />
+  </div>
+  <p>&copy; 2026 Atelier. All rights reserved.</p>
+</footer>
     </div>
   );
 }

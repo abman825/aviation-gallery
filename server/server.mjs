@@ -7,17 +7,21 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+
+const sendTelegramMessage = async (text) => {
+  // ከታች ያሉት መስመሮች ከ .env ወይም ከ Vercel እንዲያነቡ ተደርገዋል
+  const token = process.env.TELEGRAM_BOT_TOKEN; 
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+  console.log("📡 ለቴሌግራም መልእክት በመላክ ላይ...");
+  // ... የቀረው የኮድህ ክፍል ይቀጥላል
+
 const mongoURI = process.env.MONGO_URI; // ከ Vercel እንዲያነብ
 mongoose.connect(mongoURI)
   .then(() => console.log('MongoDB Atlas ተገናኝቷል!'))
   .catch((err) => console.error('የዳታቤዝ ስህተት:', err));
 // 2. አዲሱ የቴሌግራም መላኪያ ፈንክሽን (የላክኸው ኮድ)
-const sendTelegramMessage = async (text) => {
-  const token = '8601691945:AAH2Md26xKU2wvvZTr0aD4PEUxMc4-WWT-Q'; 
-  const chatId = '2068983666';
-  const url = `https://api.telegram.org/bot${token}/sendMessage`;
-
-  console.log("📡 ለቴሌግራም መልእክት በመላክ ላይ...");
 
   try {
     const response = await fetch(url, {

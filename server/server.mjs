@@ -7,13 +7,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// 1. MongoDB Atlas ግንኙነት
-const mongoURI = "mongodb+srv://abrhamman825_db_user:Jl02Lx4pJWeiDZcr@cluster0.tpkbh2l.mongodb.net/lilmoo_orders?retryWrites=true&w=majority&appName=Cluster0";
-
+const mongoURI = process.env.MONGO_URI; // ከ Vercel እንዲያነብ
 mongoose.connect(mongoURI)
-  .then(() => console.log('✅ በደስታ የምስራች! MongoDB Atlas ተገናኝቷል!'))
-  .catch(err => console.error('❌ የግንኙነት ስህተት፡', err.message));
-
+  .then(() => console.log('MongoDB Atlas ተገናኝቷል!'))
+  .catch((err) => console.error('የዳታቤዝ ስህተት:', err));
 // 2. አዲሱ የቴሌግራም መላኪያ ፈንክሽን (የላክኸው ኮድ)
 const sendTelegramMessage = async (text) => {
   const token = '8601691945:AAH2Md26xKU2wvvZTr0aD4PEUxMc4-WWT-Q'; 

@@ -75,9 +75,9 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
-// ከታች ያለውን code መጨረሻ ላይ ቀይረው
 const PORT = process.env.PORT || 5000;
 
+// '0.0.0.0' መጨመር በጣም ወሳኝ ነው
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 ሰርቨር በፖርት ${PORT} ላይ ስራ ጀምሯል`);
 });

@@ -75,4 +75,9 @@ app.post('/api/orders', async (req, res) => {
   }
 });
 
-app.listen(5000, () => console.log('🚀 ሰርቨር 5000 ላይ ስራ ጀምሯል'));
+// ከታች ያለውን code መጨረሻ ላይ ቀይረው
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 ሰርቨር በፖርት ${PORT} ላይ ስራ ጀምሯል`);
+});

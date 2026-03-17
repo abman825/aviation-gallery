@@ -62,7 +62,7 @@ app.post('/api/orders', async (req, res) => {
     await newOrder.save();
 
     const telegramText = `
-🔔 <b>አዲስ ትዕዛዝ ደርሷል!</b>
+🔔 <b>አዲስ ትዕዛዝ ደርሷል</b>
 👤 <b>ደንበኛ:</b> ${customerName}
 👗 <b>ልብስ:</b> ${productName}
 📅 <b>ቀን:</b> ${new Date().toLocaleString()}

@@ -2,7 +2,7 @@
   "name": "aviation-gallery",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://lilmoo-design.vercel.app",
+  "homepage": "https://aviation-backend-g75i.onrender.com",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,12 +12,16 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "gh-pages": "^6.1.1",
+    "mongoose": "^9.3.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "gh-pages": "^6.1.1"
+    "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "vite": "^5.4.1",
-    "@vitejs/plugin-react": "^4.3.1"
+    "@vitejs/plugin-react": "^4.3.1",
+    "vite": "^5.4.1"
   }
 }

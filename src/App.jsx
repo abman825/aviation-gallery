@@ -59,6 +59,7 @@ export default function App() {
       alert("❌ ሰርቨሩ አልተነሳም! መጀመሪያ 'node server.mjs' አስነሳ።");
       console.error("ስህተት:", error);
     }
+    
   };
 
   return (

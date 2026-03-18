@@ -26,7 +26,7 @@ export default function App() {
 
   // አዲስ የተጨመረ፡ የትዕዛዝ መረጃ መቀበያ State
   const [order, setOrder] = useState({
-    customerName: ''
+    customerName: '',
     productName: '',
     quantity: 1
   });

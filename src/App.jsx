@@ -26,7 +26,7 @@ export default function App() {
 
   // አዲስ የተጨመረ፡ የትዕዛዝ መረጃ መቀበያ State
   const [order, setOrder] = useState({
-    customerName: '',
+    customerName: ''
     productName: '',
     quantity: 1
   });
@@ -44,7 +44,7 @@ export default function App() {
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/orders', {
+      const response = await fetch('https://aviation-backend-g75i.onrender.com', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(order)

@@ -6,18 +6,18 @@ import './App.css';
 import React from 'react';
 
 // ምስሎች
-import img1 from './assets/1.jpg'; import img2 from './assets/2.jpg'; import img3 from './assets/3.jpg';
-import img4 from './assets/4.jpg'; import img5 from './assets/5.jpg'; import img6 from './assets/6.jpg';
-import imga from './assets/a.jpg'; import imgb from './assets/b.jpg'; import imgc from './assets/c.jpg';
-import imgd from './assets/d.jpg'; import imge from './assets/e.jpg'; import imgf from './assets/f.jpg';
-import imgg from './assets/g.jpg'; import imgh from './assets/h.jpg'; import imgi from './assets/i.jpg';
-import imgj from './assets/j.jpg'; import imgk from './assets/k.jpg'; import imgl from './assets/l.jpg';
+//import img1 from './assets/1.jpg'; import img2 from './assets/2.jpg'; import img3 from './assets/3.jpg';
+//import img4 from './assets/4.jpg'; import img5 from './assets/5.jpg'; import img6 from './assets/6.jpg';
+//import imga from './assets/a.jpg'; import imgb from './assets/b.jpg'; import imgc from './assets/c.jpg';
+//import imgd from './assets/d.jpg'; import imge from './assets/e.jpg'; import imgf from './assets/f.jpg';
+//import imgg from './assets/g.jpg'; import imgh from './assets/h.jpg'; import imgi from './assets/i.jpg';
+//import imgj from './assets/j.jpg'; import imgk from './assets/k.jpg'; import imgl from './assets/l.jpg';//
 
 // ቪዲዮዎች
-import vid1 from './assets/1.mp4'; import vid2 from './assets/2.mp4'; 
-import vid3 from './assets/3.mp4'; import vid4 from './assets/4.mp4'; 
-import vid5 from './assets/5.mp4'; import vid6 from './assets/6.mp4'; 
-import vid7 from './assets/7.mp4'; import vid8 from './assets/8.mp4'; import vid10 from './assets/10.mp4';
+//import vid1 from './assets/1.mp4'; import vid2 from './assets/2.mp4'; 
+//import vid3 from './assets/3.mp4'; import vid4 from './assets/4.mp4'; 
+//import vid5 from './assets/5.mp4'; import vid6 from './assets/6.mp4'; 
+//import vid7 from './assets/7.mp4'; import vid8 from './assets/8.mp4'; import vid10 from './assets/10.mp4';
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);

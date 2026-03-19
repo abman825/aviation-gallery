@@ -16,6 +16,7 @@
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "gh-pages": "^6.1.1",
+    "lucide-react": "^0.577.0",
     "mongoose": "^9.3.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

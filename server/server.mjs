@@ -6,21 +6,13 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-
+// 1. የቴሌግራም መልእክት መላኪያ ፈንክሽን
 const sendTelegramMessage = async (text) => {
-  // ከታች ያሉት መስመሮች ከ .env ወይም ከ Vercel እንዲያነቡ ተደርገዋል
   const token = process.env.TELEGRAM_BOT_TOKEN; 
   const chatId = process.env.TELEGRAM_CHAT_ID;
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
   console.log("📡 ለቴሌግራም መልእክት በመላክ ላይ...");
-  // ... የቀረው የኮድህ ክፍል ይቀጥላል
-
-const mongoURI = process.env.MONGO_URI; // ከ Vercel እንዲያነብ
-mongoose.connect(mongoURI)
-  .then(() => console.log('MongoDB Atlas ተገናኝቷል!'))
-  .catch((err) => console.error('የዳታቤዝ ስህተት:', err));
-// 2. አዲሱ የቴሌግራም መላኪያ ፈንክሽን (የላክኸው ኮድ)
 
   try {
     const response = await fetch(url, {
@@ -30,20 +22,25 @@ mongoose.connect(mongoURI)
         chat_id: chatId,
         text: text,
         parse_mode: 'HTML'
-      }),
-      timeout: 10000 
+      })
     });
 
     const data = await response.json();
     if (data.ok) {
-      console.log('📬 በደስታ የምስራች! የቴሌግራም መልእክት ተልኳል!');
+      console.log('📬 የቴሌግራም መልእክት ተልኳል!');
     } else {
       console.log('❌ የቴሌግራም ስህተት:', data.description);
     }
   } catch (error) {
-    console.log('⚠️ የግንኙነት ስህተት (Timeout): ኢንተርኔትህ እየዘገየ ነው። ደግመህ ሞክር።');
+    console.log('⚠️ የግንኙነት ስህተት:', error.message);
   }
-};
+}; // <--- ቅንፉ እዚህ ጋር መዘጋት ነበረበት
+
+// 2. የዳታቤዝ ግንኙነት
+const mongoURI = process.env.MONGO_URI;
+mongoose.connect(mongoURI)
+  .then(() => console.log('MongoDB Atlas ተገናኝቷል!'))
+  .catch((err) => console.error('የዳታቤዝ ስህተት:', err));
 
 // 3. ዳታቤዝ Schema
 const orderSchema = new mongoose.Schema({
@@ -71,12 +68,13 @@ app.post('/api/orders', async (req, res) => {
     await sendTelegramMessage(telegramText);
     res.status(201).json({ message: "ትዕዛዝዎ በትክክል ደርሶናል!" });
   } catch (error) {
+    console.error("Endpoint Error:", error);
     res.status(500).json({ error: "ትዕዛዝ መቀበል አልተቻለም" });
   }
 });
 
-const PORT = process.env.PORT || 1000;
-
+// 5. ሰርቨር ማስነሻ (Port 10000 ለ Render ይመረጣል)
+const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`);
 });

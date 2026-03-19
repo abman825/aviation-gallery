@@ -24,12 +24,15 @@ export default function App() {
   const [showGallery, setShowGallery] = useState(false);
   const [activeTab, setActiveTab] = useState('images');
 
-  // አዲስ የተጨመረ፡ የትዕዛዝ መረጃ መቀበያ State
+  // የትዕዛዝ መረጃ መቀበያ State
   const [order, setOrder] = useState({
     customerName: '',
     productName: '',
     quantity: 1
   });
+
+  // *** እዚህ ጋር ነው ትክክለኛውን የ Render ሊንክ ያስገባሁት ***
+  const API_URL = "https://aviation-backend-g75i.onrender.com/api/orders";
 
   const collections = [
     { id: 1, title: 'Spring 2026', description: 'Ethereal designs inspired by nature', image: img1 },
@@ -40,26 +43,29 @@ export default function App() {
   const imagesOnly = [img4, img5, img6, imga, imgb, imgc, imgd, imge, imgf, imgg, imgh, imgi, imgj, imgk, imgl];
   const videosOnly = [vid1, vid2, vid3, vid4, vid5, vid6, vid7, vid8, vid10];
 
-  // ትዕዛዝ ወደ ሰርቨር የሚልክ ፈንክሽን
+  // ትዕዛዝ ወደ ሰርቨር የሚልክ ፋንክሽን
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
     try {
-     const API_URL = import.meta.env.VITE_API_URL;( {
+      // እዚህ ጋር 'fetch' የሚለው ትዕዛዝ ተስተካክሏል
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(order)
       });
+      
       const result = await response.json();
       
       if (response.ok) {
-        alert("✅ " + result.message);
+        alert("✅ " + (result.message || "ትዕዛዝዎ በተሳካ ሁኔታ ተልኳል!"));
         setOrder({ customerName: '', productName: '', quantity: 1 }); // ፎርሙን ባዶ ለማድረግ
+      } else {
+        alert("❌ ስህተት ተከስቷል፦ " + result.message);
       }
     } catch (error) {
-      alert("❌ ሰርቨሩ አልተነሳም! መጀመሪያ 'node server.mjs' አስነሳ።");
+      alert("❌ ሰርቨሩ አልተነሳም! እባክዎ Render ላይ 'Live' መሆኑን ያረጋግጡ።");
       console.error("ስህተት:", error);
     }
-    
   };
 
   return (
@@ -71,7 +77,7 @@ export default function App() {
             <div className="nav-menu">
               <a href="#home">Home</a>
               <a href="#collections">Collections</a>
-              <a href="#order-section">Order Now</a> {/* ወደ ፎርሙ ይወስዳል */}
+              <a href="#order-section">Order Now</a>
               <a href="#gallery" onClick={() => setShowGallery(true)}>Gallery</a>
             </div>
             <button className="order-nav-btn" onClick={() => window.location.href='#order-section'} style={{
@@ -97,7 +103,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* አዲስ የተጨመረ፡ የትዕዛዝ መቀበያ ፎርም ክፍል */}
       <section id="order-section" style={{ padding: '60px 20px', backgroundColor: '#f9f9f9', textAlign: 'center' }}>
         <div className="container">
           <h2 className="section-title">ልብስ ይዘዙ</h2>
@@ -155,7 +160,7 @@ export default function App() {
             </div>
             <div className="gallery-grid">
               {activeTab === 'images' ? 
-                imagesOnly.map((img, i) => <img key={i} src={img} className="gallery-image" />) :
+                imagesOnly.map((img, i) => <img key={i} src={img} className="gallery-image" alt={`Gallery item ${i}`} />) :
                 videosOnly.map((vid, i) => (
                   <video key={i} controls className="gallery-image">
                     <source src={vid} type="video/mp4" />
@@ -181,12 +186,12 @@ export default function App() {
           </p>
           
           <div className="footer-contact" style={{ marginBottom: '20px' }}>
-            <p>📍 አድራሻ፡ አዲስ አበባ፣ ኢትዮጵያ</p>
-            <p>📞 ስልክ፡ +251919821717</p>
+            <p>📍 አድራሻ፦ አዲስ አበባ፣ ኢትዮጵያ</p>
+            <p>📞 ስልክ፦ +251919821717</p>
           </div>
 
           <div style={{ borderTop: '1px solid #333', paddingTop: '20px', fontSize: '14px' }}>
-            <p>&copy; 2026 Lilmoo Design. መብቱ በህግ የተጠበቀ ነው።</p>
+            <p>&copy; 2026 Lilmoo Design. መብቱ በህግ የተጠበቀ ነው፡፡</p>
           </div>
         </div>
       </footer>

@@ -6,32 +6,47 @@ import './App.css';
 import React from 'react';
 
 // ምስሎች
-//import img1 from './assets/1.jpg'; import img2 from './assets/2.jpg'; import img3 from './assets/3.jpg';
-//import img4 from './assets/4.jpg'; import img5 from './assets/5.jpg'; import img6 from './assets/6.jpg';
-//import imga from './assets/a.jpg'; import imgb from './assets/b.jpg'; import imgc from './assets/c.jpg';
-//import imgd from './assets/d.jpg'; import imge from './assets/e.jpg'; import imgf from './assets/f.jpg';
-//import imgg from './assets/g.jpg'; import imgh from './assets/h.jpg'; import imgi from './assets/i.jpg';
-//import imgj from './assets/j.jpg'; import imgk from './assets/k.jpg'; import imgl from './assets/l.jpg';//
+import img1 from './assets/1.jpg';
+import img2 from './assets/2.jpg';
+import img3 from './assets/3.jpg';
+import img4 from './assets/4.jpg';
+import img5 from './assets/5.jpg';
+import img6 from './assets/6.jpg';
+import imga from './assets/a.jpg';
+import imgb from './assets/b.jpg';
+import imgc from './assets/c.jpg';
+import imgd from './assets/d.jpg';
+import imge from './assets/e.jpg';
+import imgf from './assets/f.jpg';
+import imgg from './assets/g.jpg';
+import imgh from './assets/h.jpg';
+import imgi from './assets/i.jpg';
+import imgj from './assets/j.jpg';
+import imgk from './assets/k.jpg';
+import imgl from './assets/l.jpg';
 
-// ቪዲዮዎች
-//import vid1 from './assets/1.mp4'; import vid2 from './assets/2.mp4'; 
-//import vid3 from './assets/3.mp4'; import vid4 from './assets/4.mp4'; 
-//import vid5 from './assets/5.mp4'; import vid6 from './assets/6.mp4'; 
-//import vid7 from './assets/7.mp4'; import vid8 from './assets/8.mp4'; import vid10 from './assets/10.mp4';
+// ቪዲዮች
+import vid1 from './assets/1.mp4';
+import vid2 from './assets/2.mp4'; 
+import vid3 from './assets/3.mp4';
+import vid4 from './assets/4.mp4'; 
+import vid5 from './assets/5.mp4';
+import vid6 from './assets/6.mp4'; 
+import vid7 from './assets/7.mp4';
+import vid8 from './assets/8.mp4';
+import vid10 from './assets/10.mp4';
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
   const [activeTab, setActiveTab] = useState('images');
 
-  // የትዕዛዝ መረጃ መቀበያ State
   const [order, setOrder] = useState({
     customerName: '',
     productName: '',
     quantity: 1
   });
 
-  // *** እዚህ ጋር ነው ትክክለኛውን የ Render ሊንክ ያስገባሁት ***
   const API_URL = "https://aviation-backend-g75i.onrender.com/api/orders";
 
   const collections = [
@@ -43,11 +58,9 @@ export default function App() {
   const imagesOnly = [img4, img5, img6, imga, imgb, imgc, imgd, imge, imgf, imgg, imgh, imgi, imgj, imgk, imgl];
   const videosOnly = [vid1, vid2, vid3, vid4, vid5, vid6, vid7, vid8, vid10];
 
-  // ትዕዛዝ ወደ ሰርቨር የሚልክ ፋንክሽን
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
     try {
-      // እዚህ ጋር 'fetch' የሚለው ትዕዛዝ ተስተካክሏል
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -58,12 +71,12 @@ export default function App() {
       
       if (response.ok) {
         alert("✅ " + (result.message || "ትዕዛዝዎ በተሳካ ሁኔታ ተልኳል!"));
-        setOrder({ customerName: '', productName: '', quantity: 1 }); // ፎርሙን ባዶ ለማድረግ
+        setOrder({ customerName: '', productName: '', quantity: 1 });
       } else {
         alert("❌ ስህተት ተከስቷል፦ " + result.message);
       }
     } catch (error) {
-      alert("❌ ሰርቨሩ አልተነሳም! እባክዎ Render ላይ 'Live' መሆኑን ያረጋግጡ።");
+      alert("❌ ሰርቨሩ አልተነሳም! እባክዎ Render ላይ 'Live' መሆኑን ያረጋግጡ");
       console.error("ስህተት:", error);
     }
   };
@@ -156,7 +169,7 @@ export default function App() {
             <h2 className="section-title">GALLERY</h2>
             <div className="filter-buttons">
               <button onClick={() => setActiveTab('images')}>ፎቶዎች</button>
-              <button onClick={() => setActiveTab('videos')}>ቪዲዮዎች</button>
+              <button onClick={() => setActiveTab('videos')}>ቪዲዮች</button>
             </div>
             <div className="gallery-grid">
               {activeTab === 'images' ? 
@@ -184,14 +197,12 @@ export default function App() {
             ዘመናዊነትን ከባህል ጋር አዋህደን ለሴቶች የሚሆኑ ምርጥ የሀበሻ እና የዘመናዊ ልብሶችን በጥራት እናዘጋጃለን። 
             የእርስዎ ውበት የኛ ኩራት ነው!
           </p>
-          
           <div className="footer-contact" style={{ marginBottom: '20px' }}>
             <p>📍 አድራሻ፦ አዲስ አበባ፣ ኢትዮጵያ</p>
             <p>📞 ስልክ፦ +251919821717</p>
           </div>
-
           <div style={{ borderTop: '1px solid #333', paddingTop: '20px', fontSize: '14px' }}>
-            <p>&copy; 2026 Lilmoo Design. መብቱ በህግ የተጠበቀ ነው፡፡</p>
+            <p>&copy; 2026 Lilmoo Design. መብቱ በህግ የተጠበቀ ነው።</p>
           </div>
         </div>
       </footer>

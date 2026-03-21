@@ -40,11 +40,11 @@ export default function App() {
   const [order, setOrder] = useState({ name: '', orderType: '' });
   const [loading, setLoading] = useState(false);
 
-  // ሰርቨሩ Render ላይ ከሆነ የሰርቨሩን URL እዚህ ጋር ያስተካክሉ
+  // የሰርቨሩ URL (Render ላይ የሰጠኸው ስም MONGODB_URI ከሆነ ሰርቨሩ መገናኘቱን አረጋግጥ)
   const API_URL = "https://aviation-backend-g75i.onrender.com/api/orders";
 
   const collections = [
-    { id: 1, title: "የባህል ልብሶች", description: "ጥራት ያላቸው የሀበሻ ቀሚሶች", image: img2 },
+    { id: 1, title: "የባህል ልብሶች", description: "ጥራት ያላቸው የሐበሻ ቀሚሶች", image: img2 },
     { id: 2, title: "ዘመናዊ ዲዛይን", description: "ለተለያዩ ዝግጅቶች የሚሆኑ", image: img3 },
     { id: 3, title: "የሰርግ ልብሶች", description: "ለእርስዎ ልዩ ቀን", image: imga }
   ];
@@ -128,7 +128,7 @@ export default function App() {
               required
             >
               <option value="">የሚፈልጉትን የልብስ አይነት ይምረጡ</option>
-              <option value="Habesha Kemis">የሀበሻ ቀሚስ</option>
+              <option value="Habesha Kemis">የሐበሻ ቀሚስ</option>
               <option value="Modern Dress">ዘመናዊ የሴቶች ልብስ</option>
               <option value="Wedding Dress">የሰርግ ልብስ</option>
             </select>

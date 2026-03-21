@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './App.css'; 
 
-// ምስሎች እና ቪዲዮዎች (ከዚህ በፊት እንዳሉት ይቀጥላሉ)
+// ምስሎች እና ቪዲዮዎች
 import img1 from './assets/1.jpg';
 import img2 from './assets/2.jpg';
 import img3 from './assets/3.jpg';
@@ -37,7 +37,7 @@ export default function App() {
   const [order, setOrder] = useState({ name: '', orderType: '' });
   const [loading, setLoading] = useState(false);
 
-  // የሰርቨር አድራሻ (Render ላይ ያለው)
+  // የሰርቨር አድራሻ
   const API_URL = "https://aviation-backend-g75i.onrender.com/api/orders";
 
   const collections = [
@@ -49,16 +49,23 @@ export default function App() {
   const imagesOnly = [img4, img5, img6, imga, imgb, imgc, imgd, imge, imgf, imgg, imgh, imgi, imgj, imgk, imgl];
   const videosOnly = [vid1, vid2, vid3, vid4, vid5, vid6, vid7, vid8, vid10];
 
-  // ትዕዛዝ ለመላክ የሚሰራ Function
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
+    
+    // መረጃ መሞላቱን ማረጋገጥ
+    if (!order.name || !order.orderType) {
+      alert("እባክዎ ስምዎን እና የልብስ አይነት ይምረጡ");
+      return;
+    }
+
     setLoading(true);
 
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json' 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json' // ይህ በጣም አስፈላጊ ነው
         },
         body: JSON.stringify({
           name: order.name,
@@ -70,13 +77,13 @@ export default function App() {
 
       if (response.ok) {
         alert("✅ ትዕዛዝዎ በተሳካ ሁኔታ ተልኳል!");
-        setOrder({ name: '', orderType: '' }); // ፎርሙን ባዶ ማድረግ
+        setOrder({ name: '', orderType: '' });
       } else {
-        alert("❌ ስህተት: " + (result.message || "ትዕዛዙን መላክ አልተቻለም"));
+        alert("❌ ስህተት: " + (result.message || "መረጃው አልደረሰም"));
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("❌ ሰርቨሩ አልተገኘም! እባክዎ ኢንተርኔትዎን ወይም የሰርቨሩን ሁኔታ ያረጋግጡ።");
+      alert("❌ ሰርቨሩ ጋር መገናኘት አልተቻለም።");
     } finally {
       setLoading(false);
     }
@@ -116,7 +123,6 @@ export default function App() {
         </div>
       </section>
 
-      {/* ትዕዛዝ መቀበያ ፎርም */}
       <section id="order-section" className="order-form-section">
         <div className="container">
           <h2 className="section-title">ልብስ ይዘዙ</h2>

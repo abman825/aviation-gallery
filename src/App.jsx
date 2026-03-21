@@ -1,9 +1,7 @@
-import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
-import React from 'react';
 import './App.css'; 
 
-// ምስሎች
+// ምስሎች እና ቪዲዮዎች (ከዚህ በፊት እንዳሉት ይቀጥላሉ)
 import img1 from './assets/1.jpg';
 import img2 from './assets/2.jpg';
 import img3 from './assets/3.jpg';
@@ -23,7 +21,6 @@ import imgj from './assets/j.jpg';
 import imgk from './assets/k.jpg';
 import imgl from './assets/l.jpg';
 
-// ቪዲዮዎች
 import vid1 from './assets/1.mp4';
 import vid2 from './assets/2.mp4'; 
 import vid3 from './assets/3.mp4';
@@ -40,11 +37,11 @@ export default function App() {
   const [order, setOrder] = useState({ name: '', orderType: '' });
   const [loading, setLoading] = useState(false);
 
-  // የሰርቨሩ URL (Render ላይ የሰጠኸው ስም MONGODB_URI ከሆነ ሰርቨሩ መገናኘቱን አረጋግጥ)
+  // የሰርቨር አድራሻ (Render ላይ ያለው)
   const API_URL = "https://aviation-backend-g75i.onrender.com/api/orders";
 
   const collections = [
-    { id: 1, title: "የባህል ልብሶች", description: "ጥራት ያላቸው የሐበሻ ቀሚሶች", image: img2 },
+    { id: 1, title: "የባህል ልብሶች", description: "ጥራት ያላቸው የሀበሻ ቀሚሶች", image: img2 },
     { id: 2, title: "ዘመናዊ ዲዛይን", description: "ለተለያዩ ዝግጅቶች የሚሆኑ", image: img3 },
     { id: 3, title: "የሰርግ ልብሶች", description: "ለእርስዎ ልዩ ቀን", image: imga }
   ];
@@ -52,26 +49,34 @@ export default function App() {
   const imagesOnly = [img4, img5, img6, imga, imgb, imgc, imgd, imge, imgf, imgg, imgh, imgi, imgj, imgk, imgl];
   const videosOnly = [vid1, vid2, vid3, vid4, vid5, vid6, vid7, vid8, vid10];
 
+  // ትዕዛዝ ለመላክ የሚሰራ Function
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(order)
+        headers: { 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({
+          name: order.name,
+          orderType: order.orderType
+        })
       });
       
       const result = await response.json();
+
       if (response.ok) {
         alert("✅ ትዕዛዝዎ በተሳካ ሁኔታ ተልኳል!");
-        setOrder({ name: '', orderType: '' });
+        setOrder({ name: '', orderType: '' }); // ፎርሙን ባዶ ማድረግ
       } else {
         alert("❌ ስህተት: " + (result.message || "ትዕዛዙን መላክ አልተቻለም"));
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("❌ ሰርቨሩ አልተገኘም! እባክዎ Render ላይ 'Live' መሆኑን ወይም የኢንተርኔት ግንኙነትዎን ያረጋግጡ።");
+      alert("❌ ሰርቨሩ አልተገኘም! እባክዎ ኢንተርኔትዎን ወይም የሰርቨሩን ሁኔታ ያረጋግጡ።");
     } finally {
       setLoading(false);
     }
@@ -111,6 +116,7 @@ export default function App() {
         </div>
       </section>
 
+      {/* ትዕዛዝ መቀበያ ፎርም */}
       <section id="order-section" className="order-form-section">
         <div className="container">
           <h2 className="section-title">ልብስ ይዘዙ</h2>
@@ -128,7 +134,7 @@ export default function App() {
               required
             >
               <option value="">የሚፈልጉትን የልብስ አይነት ይምረጡ</option>
-              <option value="Habesha Kemis">የሐበሻ ቀሚስ</option>
+              <option value="Habesha Kemis">የሀበሻ ቀሚስ</option>
               <option value="Modern Dress">ዘመናዊ የሴቶች ልብስ</option>
               <option value="Wedding Dress">የሰርግ ልብስ</option>
             </select>

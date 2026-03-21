@@ -4,29 +4,47 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 
 const app = express();
-app.use(express.json());
-app.use(cors());
 
-// የዳታቤዝ ግንኙነት (ከ Render Environment Variables ስሙን ያነባል)
+// ✅ መረጃው undefined እንዳይሆን እነዚህ በጣም አስፈላጊ ናቸው
+app.use(cors()); 
+app.use(express.json()); // JSON ዳታን ለመቀበል
+
 const mongoDBURI = process.env.MONGODB_URI; 
 
-if (!mongoDBURI) {
-    console.error('❌ ስህተት: MONGODB_URI አልተገኘም! Render ላይ Environment Variable መኖሩን አረጋግጥ።');
+// የዳታቤዝ ግንኙነት
+if (mongoDBURI) {
+    mongoose.connect(mongoDBURI, { family: 4 })
+        .then(() => console.log('✅ MongoDB Atlas ተገናኝቷል!'))
+        .catch(err => console.error('❌ የዳታቤዝ ስህተት:', err.message));
 }
 
-mongoose.connect(mongoDBURI)
-    .then(() => console.log('✅ MongoDB Atlas ተገናኝቷል!'))
-    .catch(err => {
-        console.error('❌ የዳታቤዝ ስህተት ዝርዝር:', err.message);
-    });
-
-// ትዕዛዝ መቀበያ API
+// ትዕዛዝ መቀበያ API (Undefined እንዳይሆን የተስተካከለ)
 app.post('/api/orders', async (req, res) => {
     try {
+        // መረጃው መድረሱን ለማረጋገጥ መጀመሪያ console ላይ እናትመዋለን
+        console.log("የመጣው ዳታ:", req.body); 
+
         const { name, orderType } = req.body;
-        console.log(`ትዕዛዝ ደርሷል: ${name} - ${orderType}`);
-        res.status(201).json({ success: true, message: "ትዕዛዝህ ተመዝግቧል!" });
+
+        // ዳታው ካልመጣ ለተጠቃሚው ስህተት መላክ
+        if (!name || !orderType) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "ስም ወይም የልብስ አይነት አልተላከም (Undefined)" 
+            });
+        }
+
+        console.log(`🔔 አዲስ ትዕዛዝ ደርሷል: ስም: ${name}, አይነት: ${orderType}`);
+        
+        // እዚህ ጋር ወደ ዳታቤዝ (MongoDB) ሴቭ ማድረግ ትችላለህ
+        
+        res.status(201).json({ 
+            success: true, 
+            message: `ተሳክቷል! ${name} ሆይ፣ ትዕዛዝህ ደርሶናል!` 
+        });
+
     } catch (error) {
+        console.error('❌ ስህተት:', error.message);
         res.status(500).json({ success: false, error: error.message });
     }
 });

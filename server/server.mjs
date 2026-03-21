@@ -8,13 +8,13 @@ app.use(express.json());
 app.use(cors());
 
 // የዳታቤዝ ግንኙነት (ከ Render Environment Variables ስሙን ያነባል)
-const mongoURI = process.env.MONGODB_URI; 
+const mongoDBURI = process.env.MONGODB_URI; 
 
-if (!mongoURI) {
+if (!mongoDBURI) {
     console.error('❌ ስህተት: MONGODB_URI አልተገኘም! Render ላይ Environment Variable መኖሩን አረጋግጥ።');
 }
 
-mongoose.connect(mongoURI)
+mongoose.connect(mongoDBURI)
     .then(() => console.log('✅ MongoDB Atlas ተገናኝቷል!'))
     .catch(err => {
         console.error('❌ የዳታቤዝ ስህተት ዝርዝር:', err.message);

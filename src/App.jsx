@@ -38,10 +38,11 @@ export default function App() {
   const [showGallery, setShowGallery] = useState(false);
   const [activeTab, setActiveTab] = useState('images');
   const [order, setOrder] = useState({ name: '', orderType: '' });
+  const [loading, setLoading] = useState(false);
 
+  // ሰርቨሩ Render ላይ ከሆነ የሰርቨሩን URL እዚህ ጋር ያስተካክሉ
   const API_URL = "https://aviation-backend-g75i.onrender.com/api/orders";
 
-  // collections ባዶ ስለነበረ እንዲታይ ይሄ ተጨምሯል
   const collections = [
     { id: 1, title: "የባህል ልብሶች", description: "ጥራት ያላቸው የሀበሻ ቀሚሶች", image: img2 },
     { id: 2, title: "ዘመናዊ ዲዛይን", description: "ለተለያዩ ዝግጅቶች የሚሆኑ", image: img3 },
@@ -53,6 +54,7 @@ export default function App() {
 
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
@@ -65,10 +67,13 @@ export default function App() {
         alert("✅ ትዕዛዝዎ በተሳካ ሁኔታ ተልኳል!");
         setOrder({ name: '', orderType: '' });
       } else {
-        alert("❌ ስህተት: " + result.message);
+        alert("❌ ስህተት: " + (result.message || "ትዕዛዙን መላክ አልተቻለም"));
       }
     } catch (error) {
-      alert("❌ ሰርቨሩ አልተገኘም! እባክዎ Render ላይ 'Live' መሆኑን ያረጋግጡ");
+      console.error("Error:", error);
+      alert("❌ ሰርቨሩ አልተገኘም! እባክዎ Render ላይ 'Live' መሆኑን ወይም የኢንተርኔት ግንኙነትዎን ያረጋግጡ።");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -82,7 +87,9 @@ export default function App() {
               <a href="#home">Home</a>
               <a href="#collections">Collections</a>
               <a href="#order-section">Order Now</a>
-              <button onClick={() => setShowGallery(!showGallery)} className="gallery-link-btn">Gallery</button>
+              <button onClick={() => setShowGallery(!showGallery)} className="gallery-link-btn">
+                {showGallery ? "Close Gallery" : "Gallery"}
+              </button>
             </div>
           </div>
         </div>
@@ -95,7 +102,9 @@ export default function App() {
             <h1>Lilmoo Design</h1>
             <p>Contemporary Fashion Design</p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-               <button className="hero-btn" onClick={() => setShowGallery(true)}>Collections</button>
+               <button className="hero-btn" onClick={() => {
+                 document.getElementById('collections').scrollIntoView({ behavior: 'smooth' });
+               }}>See Collections</button>
                <a href="#order-section" className="hero-btn order-btn-alt">Order Now</a>
             </div>
           </div>
@@ -123,7 +132,9 @@ export default function App() {
               <option value="Modern Dress">ዘመናዊ የሴቶች ልብስ</option>
               <option value="Wedding Dress">የሰርግ ልብስ</option>
             </select>
-            <button type="submit" className="submit-btn">ትዕዛዝ ላክ (Submit Order)</button>
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading ? "በመላክ ላይ..." : "ትዕዛዝ ላክ (Submit Order)"}
+            </button>
           </form>
         </div>
       </section>
@@ -148,13 +159,23 @@ export default function App() {
           <div className="container">
             <h2 className="section-title">GALLERY</h2>
             <div className="filter-buttons">
-              <button onClick={() => setActiveTab('images')} className={activeTab === 'images' ? 'active' : ''}>ፎቶዎች</button>
-              <button onClick={() => setActiveTab('videos')} className={activeTab === 'videos' ? 'active' : ''}>ቪዲዮዎች</button>
+              <button 
+                onClick={() => setActiveTab('images')} 
+                className={activeTab === 'images' ? 'active' : ''}
+              >ፎቶዎች</button>
+              <button 
+                onClick={() => setActiveTab('videos')} 
+                className={activeTab === 'videos' ? 'active' : ''}
+              >ቪዲዮዎች</button>
             </div>
             <div className="gallery-grid">
               {activeTab === 'images' ? 
-                imagesOnly.map((img, i) => <img key={i} src={img} className="gallery-item" alt="Gallery" />) :
-                videosOnly.map((vid, i) => <video key={i} controls className="gallery-item"><source src={vid} type="video/mp4" /></video>)
+                imagesOnly.map((img, i) => <img key={i} src={img} className="gallery-item" alt={`Gallery ${i}`} />) :
+                videosOnly.map((vid, i) => (
+                  <video key={i} controls className="gallery-item">
+                    <source src={vid} type="video/mp4" />
+                  </video>
+                ))
               }
             </div>
           </div>
@@ -164,8 +185,8 @@ export default function App() {
       <footer className="footer">
         <div className="container">
           <h2 style={{ color: '#d63384' }}>ሊልሙ ዲዛይን (Lilmoo Design)</h2>
-          <p>📍 አድራሻ፡ አዲስ አበባ፣ ኢትዮጵያ | 📞 ስልክ፡ +251919821717</p>
-          <p>&copy; 2026 Lilmoo Design. All rights reserved.</p>
+          <p>📍 አድራሻ፦ አዲስ አበባ፣ ኢትዮጵያ | 📞 ስልክ፦ +251919821717</p>
+          <p>&copy; {new Date().getFullYear()} Lilmoo Design. All rights reserved.</p>
         </div>
       </footer>
     </div>

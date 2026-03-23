@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import axios from 'axios'; // አዲሱ መስመር
+import axios from 'axios'; 
 
 const app = express();
 
@@ -32,8 +32,9 @@ const Order = mongoose.model('Order', orderSchema);
 
 // --- የቴሌግራም መልዕክት መላኪያ Function ---
 const sendTelegramNotification = async (order) => {
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
+    // በቀጥታ እዚህ ጋር ቁጥሮቹን አስገብተናቸዋል (401 Error እንዳይመጣ)
+    const token = '8601691945:AAH2Md26xKU2wvZTrOaD4PEUxMc4-WWT-Q'; 
+    const chatId = '2068983666';
 
     const message = `
 🛍️ **አዲስ ትዕዛዝ ደርሷል!**
@@ -54,10 +55,13 @@ Lilmoo Design - መልካም ስራ!
         });
         console.log("🚀 የቴሌግራም መልዕክት ተልኳል!");
     } catch (error) {
-        console.error("❌ ቴሌግራም ላይ መላክ አልተቻለም:", error.message);
+        if (error.response) {
+            console.error("❌ የቴሌግራም ስህተት:", error.response.data);
+        } else {
+            console.error("❌ ስህተት:", error.message);
+        }
     }
 };
-// ---------------------------------------
 
 // ትዕዛዝ መቀበያ API
 app.post('/api/orders', async (req, res) => {
@@ -81,7 +85,7 @@ app.post('/api/orders', async (req, res) => {
         });
         const savedOrder = await newOrder.save();
 
-        // 2. ወደ ቴሌግራም መልዕክት መላክ (አዲሱ ክፍል)
+        // 2. ወደ ቴሌግራም መልዕክት መላክ
         await sendTelegramNotification(savedOrder);
 
         console.log(`✨ ትዕዛዝ ደርሷል፦ ${customerName} - ${productName}`);

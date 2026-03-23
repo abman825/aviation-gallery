@@ -1,3 +1,4 @@
+/* --- ያንተ ኦሪጅናል CSS እዚህ ይጀምራል --- */
 * {
   margin: 0;
   padding: 0;
@@ -8,8 +9,7 @@
   min-height: 100vh;
   background-color: white;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
 /* Navigation */
@@ -41,37 +41,34 @@
   font-size: 1.5rem;
   letter-spacing: 0.1em;
   font-weight: 600;
+  text-transform: uppercase;
 }
 
 .nav-menu {
   display: flex;
   gap: 2rem;
+  align-items: center;
 }
 
-.nav-menu a {
+.nav-menu a, .gallery-link-btn {
   text-decoration: none;
   color: #000;
   transition: color 0.3s;
   font-size: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
 }
 
-.nav-menu a:hover {
+.nav-menu a:hover, .gallery-link-btn:hover {
   color: #4b5563;
-}
-
-.mobile-menu-btn {
-  display: none;
-}
-
-.mobile-menu {
-  display: none;
 }
 
 /* Hero Section */
 .hero {
   position: relative;
   height: 100vh;
-  margin-top: 4rem;
 }
 
 .hero-image {
@@ -101,246 +98,153 @@
   letter-spacing: 0.1em;
 }
 
-.hero-subtitle {
-  font-size: 1.5rem;
-  margin-bottom: 2rem;
-  letter-spacing: 0.05em;
-}
-
 .hero-btn {
+  display: inline-block;
   background-color: white;
   color: black;
   padding: 0.75rem 2rem;
+  text-decoration: none;
   border: none;
   cursor: pointer;
   font-size: 1rem;
-  transition: background-color 0.3s;
+  transition: all 0.3s;
+  margin-top: 1rem;
 }
 
 .hero-btn:hover {
   background-color: #f3f4f6;
+  transform: translateY(-2px);
 }
 
-/* Collections Section */
-.collections {
-  padding: 5rem 2rem;
-}
-
-.container {
-  max-width: 1280px;
-  margin: 0 auto;
-}
-
-.section-title {
-  font-size: 3rem;
-  text-align: center;
-  margin-bottom: 4rem;
-  letter-spacing: 0.1em;
-}
-
-.collections-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-}
-
-.collection-card {
-  cursor: pointer;
-}
-
-.collection-image-wrapper {
-  position: relative;
-  overflow: hidden;
-  margin-bottom: 1rem;
-  aspect-ratio: 3/4;
-}
-
-.collection-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.7s;
-}
-
-.collection-card:hover .collection-image {
-  transform: scale(1.1);
-}
-
-.collection-overlay {
-  position: absolute;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0);
-  transition: background-color 0.3s;
-}
-
-.collection-card:hover .collection-overlay {
-  background-color: rgba(0, 0, 0, 0.2);
-}
-
-.collection-title {
-  font-size: 1.5rem;
-  margin-bottom: 0.5rem;
-  letter-spacing: 0.05em;
-}
-
-.collection-description {
-  color: #4b5563;
-  font-size: 1rem;
-}
-
-/* About Section */
-.about {
-  padding: 5rem 2rem;
-  background-color: #f9fafb;
-}
-
-.about-container {
-  max-width: 896px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.about-text {
-  font-size: 1.125rem;
-  color: #374151;
-  margin-bottom: 1.5rem;
-  line-height: 1.75;
-}
-
-.about-text:last-child {
-  margin-bottom: 0;
-}
+/* --- አዲስ የተጨመሩ የ Gallery እና Order Section ዲዛይኖች --- */
 
 /* Gallery Section */
 .gallery-section {
   padding: 5rem 2rem;
+  background-color: #fff;
 }
 
-.gallery-grid {
+.section-title {
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 3rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.image-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 4rem;
 }
 
-.gallery-item {
-  position: relative;
+.grid-item {
   overflow: hidden;
-  aspect-ratio: 1/1;
-  cursor: pointer;
+  aspect-ratio: 3/4;
 }
 
-.gallery-image {
+.grid-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.7s;
+  transition: transform 0.5s;
 }
 
-.gallery-item:hover .gallery-image {
-  transform: scale(1.1);
+.grid-item:hover img {
+  transform: scale(1.05);
 }
 
-.gallery-overlay {
-  position: absolute;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0);
-  transition: background-color 0.3s;
-}
-
-.gallery-item:hover .gallery-overlay {
-  background-color: rgba(0, 0, 0, 0.3);
-}
-
-/* Contact Section */
-.contact {
-  padding: 5rem 2rem;
-  background-color: #000;
-  color: white;
-}
-
-.contact-container {
-  max-width: 896px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.contact .section-title {
-  color: white;
-}
-
-.contact-intro {
-  font-size: 1.125rem;
-  margin-bottom: 2rem;
-}
-
-.contact-info {
-  margin-bottom: 2rem;
-}
-
-.contact-info p {
-  margin-bottom: 0.5rem;
-  font-size: 1rem;
-}
-
-.social-links {
-  display: flex;
-  justify-content: center;
+/* Video Grid */
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
-  margin-bottom: 2rem;
 }
 
-.social-links a {
-  color: white;
-  transition: color 0.3s;
+.grid-video {
+  width: 100%;
+  border-radius: 8px;
+  background: #000;
 }
 
-.social-links a:hover {
-  color: #9ca3af;
+/* Order Section */
+.order-section {
+  padding: 6rem 2rem;
+  background-color: #f9fafb;
 }
 
-.contact-btn {
-  background-color: white;
-  color: black;
-  padding: 0.75rem 2rem;
-  border: none;
-  cursor: pointer;
+.order-form-container {
+  max-width: 500px;
+  margin: 0 auto;
+  background: white;
+  padding: 3rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+.order-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input-group label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.input-group input {
+  padding: 0.8rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
   font-size: 1rem;
-  transition: background-color 0.3s;
+  outline: none;
+  transition: border-color 0.3s;
 }
 
-.contact-btn:hover {
-  background-color: #e5e7eb;
+.input-group input:focus {
+  border-color: #d63384;
 }
 
-/* Footer */
-.footer {
-  padding: 2rem;
+.submit-btn {
   background-color: #000;
   color: white;
-  border-top: 1px solid #374151;
+  padding: 1rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s;
 }
 
-.footer-content {
-  max-width: 1280px;
-  margin: 0 auto;
-  text-align: center;
-  color: #9ca3af;
-  font-size: 0.875rem;
+.submit-btn:hover {
+  background-color: #374151;
 }
-/* Admin Button Style */
+
+.submit-btn:disabled {
+  background-color: #9ca3af;
+}
+
+/* Admin Styles (ያቀረብከው) */
 .admin-btn {
-  background-color: #d63384 !important; /* ደማቅ ሮዝ */
-  color: white !important;
-  display: block !important;
+  background-color: #d63384;
+  color: white;
   padding: 8px 15px;
   border-radius: 5px;
   cursor: pointer;
   border: none;
   font-weight: bold;
-  z-index: 100;
 }
 
-/* Admin Modal (የዝርዝር ገጹ) */
 .admin-overlay {
   position: fixed;
   top: 0;
@@ -356,40 +260,44 @@
 
 .admin-modal {
   background: white;
-  padding: 20px;
+  padding: 2rem;
   border-radius: 10px;
   width: 90%;
-  max-width: 600px;
+  max-width: 700px;
   max-height: 80vh;
   overflow-y: auto;
-  color: #333;
 }
 
 .admin-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 15px;
 }
 
 .admin-table th, .admin-table td {
-  border: 1px solid #ddd;
-  padding: 10px;
+  border-bottom: 1px solid #eee;
+  padding: 1rem;
   text-align: left;
 }
 
-.close-btn {
-  background: red;
+/* Footer */
+.footer {
+  padding: 4rem 2rem;
+  background-color: #000;
   color: white;
-  border: none;
-  padding: 5px 10px;
-  cursor: pointer;
-  border-radius: 5px;
-}
-.admin-modal h2 {
-  color: #d63384;
-  margin-bottom: 10px;
+  text-align: center;
 }
 
-.admin-table thead {
-  background-color: #f3f4f6;
+.footer p {
+  margin-bottom: 0.5rem;
+  color: #9ca3af;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .hero-content h1 {
+    font-size: 2.5rem;
+  }
+  .nav-menu {
+    display: none; /* ለጊዜው በሞባይል እንዲጠፋ */
+  }
 }

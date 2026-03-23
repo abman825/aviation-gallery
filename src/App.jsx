@@ -39,7 +39,7 @@ export default function App() {
   const [order, setOrder] = useState({ name: '', orderType: '' });
   const [loading, setLoading] = useState(false);
 
-  // ሰርቨርህ (Render ላይ ያለው)
+  // ሰርቨር (Render ላይ ያለው)
   const API_URL = "https://aviation-backend-g75i.onrender.com/api/orders";
 
   // የአድሚን ዝርዝር ለማምጣት
@@ -65,6 +65,8 @@ export default function App() {
   // ትዕዛዝ ለመላክ
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
+    if (!order.name || !order.orderType) return alert("እባክዎ ስም እና የልብስ አይነት ይሙሉ");
+    
     setLoading(true);
     try {
       const response = await fetch(API_URL, {
@@ -106,7 +108,7 @@ export default function App() {
         </div>
       </nav>
 
-      {/* የአድሚን ዝርዝር Dashboard (Modal) */}
+      {/* የአድሚን Dashboard (Modal) */}
       {showAdmin && (
         <div className="admin-overlay">
           <div className="admin-modal">
@@ -150,7 +152,63 @@ export default function App() {
         </div>
       </section>
 
-      {/* Gallery እና ሌሎች ክፍሎች እዚህ ይቀጥላሉ... */}
+      {/* Gallery Section - አዲስ የተጨመረ */}
+      {showGallery && (
+        <section className="gallery-section">
+          <div className="container">
+            <h2 className="section-title">Our Collection</h2>
+            <div className="image-grid">
+              {[img1, img2, img3, img4, img5, img6, imga, imgb, imgc, imgd, imge, imgf, imgg, imgh, imgi, imgj, imgk, imgl].map((pic, index) => (
+                <div key={index} className="grid-item">
+                  <img src={pic} alt={`Design ${index}`} />
+                </div>
+              ))}
+            </div>
+            <h2 className="section-title">Videos</h2>
+            <div className="video-grid">
+              {[vid1, vid2, vid3, vid4, vid5, vid6, vid7, vid8, vid10].map((vid, index) => (
+                <video key={index} controls className="grid-video">
+                  <source src={vid} type="video/mp4" />
+                </video>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Order Section - አዲስ የተጨመረ */}
+      <section id="order-section" className="order-section">
+        <div className="container">
+          <h2 className="section-title">ትዕዛዝ ይላኩ</h2>
+          <div className="order-form-container">
+            <form onSubmit={handleOrderSubmit} className="order-form">
+              <div className="input-group">
+                <label>የእርስዎ ስም</label>
+                <input 
+                  type="text" 
+                  placeholder="ሙሉ ስም ያስገቡ" 
+                  value={order.name}
+                  onChange={(e) => setOrder({...order, name: e.target.value})}
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <label>የልብስ አይነት / ዲዛይን</label>
+                <input 
+                  type="text" 
+                  placeholder="ለምሳሌ፡ ሐበሻ ቀሚስ" 
+                  value={order.orderType}
+                  onChange={(e) => setOrder({...order, orderType: e.target.value})}
+                  required
+                />
+              </div>
+              <button type="submit" className="submit-btn" disabled={loading}>
+                {loading ? "በመላክ ላይ..." : "ትዕዛዝ ላክ"}
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
 
       <footer className="footer">
         <div className="container">

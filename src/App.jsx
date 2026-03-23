@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css'; 
 
 // ምስሎች እና ቪዲዮዎች
@@ -33,12 +33,33 @@ import vid10 from './assets/10.mp4';
 
 export default function App() {
   const [showGallery, setShowGallery] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false); // Admin ገጽ ለማሳየት
+  const [adminOrders, setAdminOrders] = useState([]); // የትዕዛዝ ዝርዝር
   const [activeTab, setActiveTab] = useState('images');
   const [order, setOrder] = useState({ name: '', orderType: '' });
   const [loading, setLoading] = useState(false);
 
-  // የሰርቨር አድራሻ
   const API_URL = "https://aviation-backend-g75i.onrender.com/api/orders";
+
+  // --- Admin Dashboard መረጃን ከሰርቨር ማምጫ ---
+  const fetchOrders = async () => {
+    const password = prompt("የአድሚን ፓስዎርድ ያስገቡ:");
+    if (password === "1234") { // የፈለግከውን ፓስዎርድ እዚህ ጋር ቀይረው
+      setLoading(true);
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+        setAdminOrders(data);
+        setShowAdmin(true);
+      } catch (error) {
+        alert("መረጃውን ማግኘት አልተቻለም!");
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      alert("የተሳሳተ ፓስዎርድ!");
+    }
+  };
 
   const collections = [
     { id: 1, title: "የባህል ልብሶች", description: "ጥራት ያላቸው የሀበሻ ቀሚሶች", image: img2 },
@@ -51,39 +72,26 @@ export default function App() {
 
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
-    
-    // መረጃ መሞላቱን ማረጋገጥ
     if (!order.name || !order.orderType) {
       alert("እባክዎ ስምዎን እና የልብስ አይነት ይምረጡ");
       return;
     }
-
     setLoading(true);
-
     try {
       const response = await fetch(API_URL, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json' // ይህ በጣም አስፈላጊ ነው
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-  customerName: order.name, // name ወደ customerName ተቀይሯል
-  productName: order.orderType // orderType ወደ productName ተቀይሯል
+          customerName: order.name,
+          productName: order.orderType
         })
       });
-      
-      const result = await response.json();
-
       if (response.ok) {
-        alert("✅ ትዕዛዝዎ በተሳካ ሁኔታ ተልኳል!");
+        alert("✅ ትዕዛዝዎ በታማኝነት ደርሶናል!");
         setOrder({ name: '', orderType: '' });
-      } else {
-        alert("❌ ስህተት: " + (result.message || "መረጃው አልደረሰም"));
       }
     } catch (error) {
-      console.error("Error:", error);
-      alert("❌ ሰርቨሩ ጋር መገናኘት አልተቻለም።");
+      alert("❌ ስህተት ተፈጥሯል");
     } finally {
       setLoading(false);
     }
@@ -97,32 +105,58 @@ export default function App() {
             <div className="logo">lilmoo</div>
             <div className="nav-menu">
               <a href="#home">Home</a>
-              <a href="#collections">Collections</a>
-              <a href="#order-section">Order Now</a>
               <button onClick={() => setShowGallery(!showGallery)} className="gallery-link-btn">
                 {showGallery ? "Close Gallery" : "Gallery"}
               </button>
+              <button onClick={fetchOrders} className="admin-btn">Admin</button>
             </div>
           </div>
         </div>
       </nav>
 
+      {/* Admin Dashboard እዚህ ጋር ይታያል */}
+      {showAdmin && (
+        <div className="admin-overlay">
+          <div className="admin-modal">
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+               <h2>የደንበኞች ትዕዛዝ ዝርዝር</h2>
+               <button onClick={() => setShowAdmin(false)} className="close-btn">X</button>
+            </div>
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>ስም</th>
+                  <th>ልብስ</th>
+                  <th>ቀን</th>
+                </tr>
+              </thead>
+              <tbody>
+                {adminOrders.map((ord, i) => (
+                  <tr key={i}>
+                    <td>{ord.customerName}</td>
+                    <td>{ord.productName}</td>
+                    <td>{new Date(ord.date).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Hero Section */}
       <section id="home" className="hero">
         <img src={img1} alt="Hero" className="hero-image" />
         <div className="hero-overlay">
           <div className="hero-content">
             <h1>Lilmoo Design</h1>
             <p>Contemporary Fashion Design</p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-               <button className="hero-btn" onClick={() => {
-                 document.getElementById('collections').scrollIntoView({ behavior: 'smooth' });
-               }}>See Collections</button>
-               <a href="#order-section" className="hero-btn order-btn-alt">Order Now</a>
-            </div>
+            <a href="#order-section" className="hero-btn">Order Now</a>
           </div>
         </div>
       </section>
 
+      {/* Order Form */}
       <section id="order-section" className="order-form-section">
         <div className="container">
           <h2 className="section-title">ልብስ ይዘዙ</h2>
@@ -151,43 +185,19 @@ export default function App() {
         </div>
       </section>
 
-      <section id="collections" className="collections">
-        <div className="container">
-          <h2 className="section-title">FEATURED COLLECTIONS</h2>
-          <div className="collections-grid">
-            {collections.map((col) => (
-              <div key={col.id} className="collection-card">
-                <img src={col.image} alt={col.title} className="collection-image" />
-                <h3>{col.title}</h3>
-                <p>{col.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+      {/* Gallery Section */}
       {showGallery && (
-        <section id="gallery" className="gallery-section">
+        <section className="gallery-section">
           <div className="container">
             <h2 className="section-title">GALLERY</h2>
             <div className="filter-buttons">
-              <button 
-                onClick={() => setActiveTab('images')} 
-                className={activeTab === 'images' ? 'active' : ''}
-              >ፎቶዎች</button>
-              <button 
-                onClick={() => setActiveTab('videos')} 
-                className={activeTab === 'videos' ? 'active' : ''}
-              >ቪዲዮዎች</button>
+              <button onClick={() => setActiveTab('images')} className={activeTab === 'images' ? 'active' : ''}>ፎቶዎች</button>
+              <button onClick={() => setActiveTab('videos')} className={activeTab === 'videos' ? 'active' : ''}>ቪዲዮዎች</button>
             </div>
             <div className="gallery-grid">
               {activeTab === 'images' ? 
-                imagesOnly.map((img, i) => <img key={i} src={img} className="gallery-item" alt={`Gallery ${i}`} />) :
-                videosOnly.map((vid, i) => (
-                  <video key={i} controls className="gallery-item">
-                    <source src={vid} type="video/mp4" />
-                  </video>
-                ))
+                imagesOnly.map((img, i) => <img key={i} src={img} className="gallery-item" />) :
+                videosOnly.map((vid, i) => <video key={i} controls src={vid} className="gallery-item" />)
               }
             </div>
           </div>
@@ -196,9 +206,8 @@ export default function App() {
 
       <footer className="footer">
         <div className="container">
-          <h2 style={{ color: '#d63384' }}>ሊልሙ ዲዛይን (Lilmoo Design)</h2>
           <p>📍 አድራሻ፦ አዲስ አበባ፣ ኢትዮጵያ | 📞 ስልክ፦ +251919821717</p>
-          <p>&copy; {new Date().getFullYear()} Lilmoo Design. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Lilmoo Design.</p>
         </div>
       </footer>
     </div>

@@ -32,13 +32,11 @@ const Order = mongoose.model('Order', orderSchema);
 
 // --- የቴሌግራም መልዕክት መላኪያ Function ---
 const sendTelegramNotification = async (order) => {
-    // መረጃውን ከ Environment Variables (Render/ .env) ላይ ያነባል
     const token = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
-    // መረጃዎቹ መኖራቸውን ለማረጋገጥ (ለዲባጊንግ)
     if (!token || !chatId) {
-        console.error("❌ ስህተት፡ TELEGRAM_BOT_TOKEN ወይም TELEGRAM_CHAT_ID በ Environment ላይ አልተገኘም!");
+        console.error("⚠️ ማሳሰቢያ፡ ቴሌግራም አልተዋቀረም (Token/ChatID የለም)");
         return;
     }
 
@@ -61,19 +59,25 @@ Lilmoo Design - መልካም ስራ!
         });
         console.log("🚀 የቴሌግራም መልዕክት ተልኳል!");
     } catch (error) {
-        if (error.response) {
-            console.error("❌ የቴሌግራም ስህተት:", error.response.data);
-        } else {
-            console.error("❌ ስህተት:", error.message);
-        }
+        console.error("❌ የቴሌግራም ስህተት (401 ቢሆንም ዳታቤዝ ላይ ተመዝግቧል)");
     }
 };
 
-// ትዕዛዝ መቀበያ API
+// --- 1. ሁሉንም ትዕዛዞች ለ Admin ገጽ የሚሰጥ API (አዲስ የተጨመረ) ---
+app.get('/api/orders', async (req, res) => {
+    try {
+        // ሁሉንም ትዕዛዞች ከዳታቤዝ ያመጣል (አዲሶቹን ከላይ ያደርጋል)
+        const orders = await Order.find().sort({ date: -1 });
+        res.status(200).json(orders);
+    } catch (error) {
+        console.error('❌ መረጃ ማምጣት አልተቻለም:', error.message);
+        res.status(500).json({ success: false, message: "መረጃ ማግኘት አልተቻለም" });
+    }
+});
+
+// --- 2. ትዕዛዝ መቀበያ API ---
 app.post('/api/orders', async (req, res) => {
     try {
-        console.log("የመጣው ዳታ:", req.body); 
-
         const { customerName, productName, quantity } = req.body;
 
         if (!customerName || !productName) {
@@ -83,7 +87,7 @@ app.post('/api/orders', async (req, res) => {
             });
         }
 
-        // 1. ወደ ዳታቤዝ (MongoDB) ሴቭ ማድረግ
+        // 1. ዳታቤዝ (MongoDB) ላይ ሴቭ ማድረግ
         const newOrder = new Order({
             customerName,
             productName,
@@ -91,10 +95,10 @@ app.post('/api/orders', async (req, res) => {
         });
         const savedOrder = await newOrder.save();
 
-        // 2. ወደ ቴሌግራም መልዕክት መላክ
+        // 2. ቴሌግራም ላይ ለመላክ መሞከር
         await sendTelegramNotification(savedOrder);
 
-        console.log(`✨ ትዕዛዝ ደርሷል፦ ${customerName} - ${productName}`);
+        console.log(`✨ ትዕዛዝ ተመዝግቧል፦ ${customerName}`);
         
         res.status(201).json({ 
             success: true, 

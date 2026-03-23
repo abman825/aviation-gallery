@@ -33,7 +33,7 @@ const Order = mongoose.model('Order', orderSchema);
 // --- የቴሌግራም መልዕክት መላኪያ Function ---
 const sendTelegramNotification = async (order) => {
     // በቀጥታ እዚህ ጋር ቁጥሮቹን አስገብተናቸዋል (401 Error እንዳይመጣ)
-    const token = '8601691945:AAH2Md26xKU2wvZTrOaD4PEUxMc4-WWT-Q'; 
+    const token = '8601691945:AAHuf1tKpCAmU6j6c0qp0i8sR0qv4FOnCPc'; 
     const chatId = '2068983666';
 
     const message = `

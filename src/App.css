@@ -383,3 +383,11 @@
   cursor: pointer;
   border-radius: 5px;
 }
+.admin-modal h2 {
+  color: #d63384;
+  margin-bottom: 10px;
+}
+
+.admin-table thead {
+  background-color: #f3f4f6;
+}

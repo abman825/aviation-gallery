@@ -2,17 +2,16 @@ import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import axios from 'axios'; // አዲስ ትዕዛዝ ለቴሌግራም ለመላክ
 
 const app = express();
 
 // Middleware
 app.use(cors()); 
 app.use(express.json()); 
-app.use(express.urlencoded({ extended: true })); 
 
-// የ MongoDB ግንኙነት
+// MongoDB ግንኙነት
 const mongoDBURI = process.env.MONGODB_URI; 
-
 if (mongoDBURI) {
     mongoose.connect(mongoDBURI, { family: 4 })
         .then(() => console.log('✅ MongoDB Atlas ተገናኝቷል!'))
@@ -26,50 +25,41 @@ const orderSchema = new mongoose.Schema({
     quantity: { type: Number, default: 1 },
     date: { type: Date, default: Date.now }
 });
-
 const Order = mongoose.model('Order', orderSchema);
 
-// --- 1. ሁሉንም ትዕዛዞች ለ Admin ገጽ የሚሰጥ API ---
+// 1. ሁሉንም ትዕዛዞች ማየት (Admin)
 app.get('/api/orders', async (req, res) => {
     try {
-        // ሁሉንም ትዕዛዞች ከዳታቤዝ ያመጣል (አዲሱ ከላይ እንዲሆን)
         const orders = await Order.find().sort({ date: -1 });
         res.status(200).json(orders);
     } catch (error) {
-        console.error('❌ መረጃ ማምጣት አልተቻለም:', error.message);
         res.status(500).json({ success: false, message: "መረጃ ማግኘት አልተቻለም" });
     }
 });
 
-// --- 2. ትዕዛዝ መቀበያ API ---
+// 2. ትዕዛዝ መቀበያ እና ለቴሌግራም መላኪያ
 app.post('/api/orders', async (req, res) => {
     try {
         const { customerName, productName, quantity } = req.body;
 
-        if (!customerName || !productName) {
-            return res.status(400).json({ 
-                success: false, 
-                message: "እባክዎ ስም እና የልብስ አይነት በትክክል ይላኩ" 
+        const newOrder = new Order({ customerName, productName, quantity: quantity || 1 });
+        await newOrder.save();
+
+        // --- ለቴሌግራም ቦት መልዕክት መላክ ---
+        const botToken = process.env.TELEGRAM_BOT_TOKEN;
+        const chatId = process.env.TELEGRAM_CHAT_ID;
+        
+        if(botToken && chatId) {
+            const message = `👗 አዲስ ትዕዛዝ መጥቷል!\n\n👤 ስም: ${customerName}\n📦 እቃ: ${productName}\n🔢 ብዛት: ${quantity || 1}`;
+            await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                chat_id: chatId,
+                text: message
             });
         }
 
-        const newOrder = new Order({
-            customerName,
-            productName,
-            quantity: quantity || 1
-        });
-        
-        await newOrder.save();
-        console.log(`✨ አዲስ ትዕዛዝ ተመዝግቧል፦ ${customerName}`);
-        
-        res.status(201).json({ 
-            success: true, 
-            message: `ተሳክቷል! ${customerName} ሆይ፣ ትዕዛዝህ ደርሶናል!` 
-        });
-
+        res.status(201).json({ success: true, message: `ተሳክቷል! እናመሰግናለን ${customerName}!` });
     } catch (error) {
-        console.error('❌ ስህተት:', error.message);
-        res.status(500).json({ success: false, error: "ትዕዛዙን መቀበል አልተቻለም" });
+        res.status(500).json({ success: false, error: "ትዕዛዙ አልተሳካም" });
     }
 });
 

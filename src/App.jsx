@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css'; 
 
-// ምስሎች እና ቪዲዮዎች
+// ምስሎች እና ቪዲዮዎች (ከአንተ assets ጋር የተያያዙ)
 import img1 from './assets/1.jpg';
 import img2 from './assets/2.jpg';
 import img3 from './assets/3.jpg';
@@ -39,8 +39,10 @@ export default function App() {
   const [order, setOrder] = useState({ name: '', orderType: '' });
   const [loading, setLoading] = useState(false);
 
+  // ሰርቨርህ (Render ላይ ያለው)
   const API_URL = "https://aviation-backend-g75i.onrender.com/api/orders";
 
+  // የአድሚን ዝርዝር ለማምጣት
   const fetchOrders = async () => {
     const password = prompt("የአድሚን ፓስዎርድ ያስገቡ:");
     if (password === "1234") { 
@@ -60,21 +62,8 @@ export default function App() {
     }
   };
 
-  const collections = [
-    { id: 1, title: "የባህል ልብሶች", description: "ጥራት ያላቸው የሀበሻ ቀሚሶች", image: img2 },
-    { id: 2, title: "ዘመናዊ ዲዛይን", description: "ለተለያዩ ዝግጅቶች የሚሆኑ", image: img3 },
-    { id: 3, title: "የሰርግ ልብሶች", description: "ለእርስዎ ልዩ ቀን", image: imga }
-  ];
-
-  const imagesOnly = [img4, img5, img6, imga, imgb, imgc, imgd, imge, imgf, imgg, imgh, imgi, imgj, imgk, imgl];
-  const videosOnly = [vid1, vid2, vid3, vid4, vid5, vid6, vid7, vid8, vid10];
-
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
-    if (!order.name || !order.orderType) {
-      alert("እባክዎ ስምዎን እና የልብስ አይነት ይምረጡ");
-      return;
-    }
     setLoading(true);
     try {
       const response = await fetch(API_URL, {
@@ -86,7 +75,7 @@ export default function App() {
         })
       });
       if (response.ok) {
-        alert("✅ ትዕዛዝዎ በታማኝነት ደርሶናል!");
+        alert("✅ ትዕዛዝዎ ደርሶናል!");
         setOrder({ name: '', orderType: '' });
       }
     } catch (error) {
@@ -103,8 +92,8 @@ export default function App() {
           <div className="nav-content">
             <div className="logo">lilmoo</div>
             
-            {/* አዲስ አቀማመጥ፡ በተኑን ከሜኑው አውጥተነዋል */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {/* አድሚን በተን እዚህ ጋር ነው */}
               <button onClick={fetchOrders} className="admin-btn">Admin</button>
               
               <div className="nav-menu">
@@ -118,12 +107,12 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Admin Dashboard */}
+      {/* የአድሚን ዝርዝር (Dashboard) */}
       {showAdmin && (
         <div className="admin-overlay">
           <div className="admin-modal">
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: '20px'}}>
-               <h2 style={{color: '#d63384'}}>የደንበኞች ትዕዛዝ ዝርዝር</h2>
+               <h2 style={{color: '#d63384'}}>የደንበኞች ዝርዝር</h2>
                <button onClick={() => setShowAdmin(false)} className="close-btn">X</button>
             </div>
             <div style={{overflowX: 'auto'}}>
@@ -162,57 +151,10 @@ export default function App() {
         </div>
       </section>
 
-      {/* Order Form */}
-      <section id="order-section" className="order-form-section">
-        <div className="container">
-          <h2 className="section-title">ልብስ ይዘዙ</h2>
-          <form onSubmit={handleOrderSubmit} className="order-form">
-            <input 
-              type="text" 
-              placeholder="ሙሉ ስምዎ" 
-              value={order.name}
-              onChange={(e) => setOrder({...order, name: e.target.value})}
-              required 
-            />
-            <select 
-              value={order.orderType}
-              onChange={(e) => setOrder({...order, orderType: e.target.value})}
-              required
-            >
-              <option value="">የሚፈልጉትን የልብስ አይነት ይምረጡ</option>
-              <option value="Habesha Kemis">የሀበሻ ቀሚስ</option>
-              <option value="Modern Dress">ዘመናዊ የሴቶች ልብስ</option>
-              <option value="Wedding Dress">የሰርግ ልብስ</option>
-            </select>
-            <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? "በመላክ ላይ..." : "ትዕዛዝ ላክ (Submit Order)"}
-            </button>
-          </form>
-        </div>
-      </section>
-
-      {/* Gallery Section */}
-      {showGallery && (
-        <section className="gallery-section">
-          <div className="container">
-            <h2 className="section-title">GALLERY</h2>
-            <div className="filter-buttons">
-              <button onClick={() => setActiveTab('images')} className={activeTab === 'images' ? 'active' : ''}>ፎቶዎች</button>
-              <button onClick={() => setActiveTab('videos')} className={activeTab === 'videos' ? 'active' : ''}>ቪዲዮዎች</button>
-            </div>
-            <div className="gallery-grid">
-              {activeTab === 'images' ? 
-                imagesOnly.map((img, i) => <img key={i} src={img} className="gallery-item" alt="gallery" />) :
-                videosOnly.map((vid, i) => <video key={i} controls src={vid} className="gallery-item" />)
-              }
-            </div>
-          </div>
-        </section>
-      )}
-
+      {/* የተቀረው የዌብሳይትህ ክፍል (Gallery, Order Form, Footer) */}
       <footer className="footer">
         <div className="container">
-          <p>📍 አድራሻ፦ አዲስ አበባ፣ ኢትዮጵያ | 📞 ስልክ፦ +251919821717</p>
+          <p>📍 አዲስ አበባ | 📞 +251919821717</p>
           <p>&copy; {new Date().getFullYear()} Lilmoo Design.</p>
         </div>
       </footer>

@@ -2,7 +2,6 @@ import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import axios from 'axios'; 
 
 const app = express();
 
@@ -30,43 +29,10 @@ const orderSchema = new mongoose.Schema({
 
 const Order = mongoose.model('Order', orderSchema);
 
-// --- የቴሌግራም መልዕክት መላኪያ Function ---
-const sendTelegramNotification = async (order) => {
-    const token = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-
-    if (!token || !chatId) {
-        console.error("⚠️ ማሳሰቢያ፡ ቴሌግራም አልተዋቀረም (Token/ChatID የለም)");
-        return;
-    }
-
-    const message = `
-🛍️ **አዲስ ትዕዛዝ ደርሷል!**
------------------------
-👤 **ደንበኛ:** ${order.customerName}
-📦 **ዕቃ:** ${order.productName}
-🔢 **ብዛት:** ${order.quantity}
-📅 **ቀን:** ${new Date(order.date).toLocaleString()}
------------------------
-Lilmoo Design - መልካም ስራ!
-    `;
-
-    try {
-        await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
-            chat_id: chatId,
-            text: message,
-            parse_mode: 'Markdown'
-        });
-        console.log("🚀 የቴሌግራም መልዕክት ተልኳል!");
-    } catch (error) {
-        console.error("❌ የቴሌግራም ስህተት (401 ቢሆንም ዳታቤዝ ላይ ተመዝግቧል)");
-    }
-};
-
-// --- 1. ሁሉንም ትዕዛዞች ለ Admin ገጽ የሚሰጥ API (አዲስ የተጨመረ) ---
+// --- 1. ሁሉንም ትዕዛዞች ለ Admin ገጽ የሚሰጥ API ---
 app.get('/api/orders', async (req, res) => {
     try {
-        // ሁሉንም ትዕዛዞች ከዳታቤዝ ያመጣል (አዲሶቹን ከላይ ያደርጋል)
+        // ሁሉንም ትዕዛዞች ከዳታቤዝ ያመጣል (አዲሱ ከላይ እንዲሆን)
         const orders = await Order.find().sort({ date: -1 });
         res.status(200).json(orders);
     } catch (error) {
@@ -87,18 +53,14 @@ app.post('/api/orders', async (req, res) => {
             });
         }
 
-        // 1. ዳታቤዝ (MongoDB) ላይ ሴቭ ማድረግ
         const newOrder = new Order({
             customerName,
             productName,
             quantity: quantity || 1
         });
-        const savedOrder = await newOrder.save();
-
-        // 2. ቴሌግራም ላይ ለመላክ መሞከር
-        await sendTelegramNotification(savedOrder);
-
-        console.log(`✨ ትዕዛዝ ተመዝግቧል፦ ${customerName}`);
+        
+        await newOrder.save();
+        console.log(`✨ አዲስ ትዕዛዝ ተመዝግቧል፦ ${customerName}`);
         
         res.status(201).json({ 
             success: true, 

@@ -2,10 +2,11 @@ import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import axios from 'axios'; // አዲሱ መስመር
 
 const app = express();
 
-// Middleware - መረጃው እንዳይጠፋ ቅደም ተከተላቸውን መጠበቅ አለባቸው
+// Middleware
 app.use(cors()); 
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true })); 
@@ -19,7 +20,7 @@ if (mongoDBURI) {
         .catch(err => console.error('❌ የዳታቤዝ ስህተት:', err.message));
 }
 
-// ለትዕዛዞች የሚሆን Schema ማዘጋጀት (ዳታቤዝ ውስጥ እንዲቀመጥ)
+// Order Schema
 const orderSchema = new mongoose.Schema({
     customerName: String,
     productName: String,
@@ -29,16 +30,42 @@ const orderSchema = new mongoose.Schema({
 
 const Order = mongoose.model('Order', orderSchema);
 
+// --- የቴሌግራም መልዕክት መላኪያ Function ---
+const sendTelegramNotification = async (order) => {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+
+    const message = `
+🛍️ **አዲስ ትዕዛዝ ደርሷል!**
+-----------------------
+👤 **ደንበኛ:** ${order.customerName}
+📦 **ዕቃ:** ${order.productName}
+🔢 **ብዛት:** ${order.quantity}
+📅 **ቀን:** ${new Date(order.date).toLocaleString()}
+-----------------------
+Lilmoo Design - መልካም ስራ!
+    `;
+
+    try {
+        await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
+            chat_id: chatId,
+            text: message,
+            parse_mode: 'Markdown'
+        });
+        console.log("🚀 የቴሌግራም መልዕክት ተልኳል!");
+    } catch (error) {
+        console.error("❌ ቴሌግራም ላይ መላክ አልተቻለም:", error.message);
+    }
+};
+// ---------------------------------------
+
 // ትዕዛዝ መቀበያ API
 app.post('/api/orders', async (req, res) => {
     try {
-        // Render Logs ላይ የመጣውን መረጃ ለማየት
         console.log("የመጣው ዳታ:", req.body); 
 
-        // ከ Frontend (Vercel) የሚመጡት ትክክለኛ ስሞች
         const { customerName, productName, quantity } = req.body;
 
-        // መረጃው መኖሩን ማረጋገጥ
         if (!customerName || !productName) {
             return res.status(400).json({ 
                 success: false, 
@@ -52,11 +79,13 @@ app.post('/api/orders', async (req, res) => {
             productName,
             quantity: quantity || 1
         });
-        await newOrder.save();
+        const savedOrder = await newOrder.save();
 
-        console.log(`✨ ትዕዛዝ ደርሷል፡ ${customerName} - ${productName}`);
+        // 2. ወደ ቴሌግራም መልዕክት መላክ (አዲሱ ክፍል)
+        await sendTelegramNotification(savedOrder);
+
+        console.log(`✨ ትዕዛዝ ደርሷል፦ ${customerName} - ${productName}`);
         
-        // 2. ለተጠቃሚው መልስ መላክ
         res.status(201).json({ 
             success: true, 
             message: `ተሳክቷል! ${customerName} ሆይ፣ ትዕዛዝህ ደርሶናል!` 

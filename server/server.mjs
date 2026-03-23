@@ -32,9 +32,15 @@ const Order = mongoose.model('Order', orderSchema);
 
 // --- የቴሌግራም መልዕክት መላኪያ Function ---
 const sendTelegramNotification = async (order) => {
-    // በቀጥታ እዚህ ጋር ቁጥሮቹን አስገብተናቸዋል (401 Error እንዳይመጣ)
-    const token = '8601691945:AAHuf1tKpCAmU6j6c0qp0i8sR0qv4FOnCPc'; 
-    const chatId = '2068983666';
+    // መረጃውን ከ Environment Variables (Render/ .env) ላይ ያነባል
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+
+    // መረጃዎቹ መኖራቸውን ለማረጋገጥ (ለዲባጊንግ)
+    if (!token || !chatId) {
+        console.error("❌ ስህተት፡ TELEGRAM_BOT_TOKEN ወይም TELEGRAM_CHAT_ID በ Environment ላይ አልተገኘም!");
+        return;
+    }
 
     const message = `
 🛍️ **አዲስ ትዕዛዝ ደርሷል!**

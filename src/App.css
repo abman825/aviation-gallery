@@ -621,3 +621,75 @@ body {
 
 /* 5. Section Titles */
 .section-title { font-size: 3vw; text-align: center; margin-bottom: 3vw; padding-top: 5vw; }
+/* --- Admin Image Upload Styling --- */
+
+.admin-post-section {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2vw;
+  border-radius: 1.5vw;
+  margin-bottom: 2vw;
+  border: 1px solid var(--glass-border);
+  text-align: center;
+}
+
+.admin-post-section h3 {
+  font-size: 1.8vw;
+  margin-bottom: 1.5vw;
+  color: var(--accent);
+}
+
+.upload-box {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5vw;
+  align-items: center;
+}
+
+/* ፋይል መምረጫው በተን */
+.upload-box input[type="file"] {
+  font-size: 1vw;
+  color: white;
+  background: var(--glass-bg);
+  padding: 1vw;
+  border-radius: 0.8vw;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Post ማድረጊያ በተን */
+.upload-box button {
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 1vw 3vw;
+  border-radius: 5vw;
+  font-size: 1.2vw;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+  width: 100%;
+}
+
+.upload-box button:disabled {
+  background: #666;
+  cursor: not-allowed;
+}
+
+.upload-box button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(214, 51, 132, 0.4);
+}
+
+/* የአድሚን ሞዳል ቁመት እንዳያጥር ማስተካከያ */
+.admin-modal {
+  max-height: 90vh; /* ከስክሪኑ 90% በላይ እንዳይሆን */
+  overflow-y: auto; /* ይዘቱ ከበዛ ወደ ታች ማሸብለያ እንዲመጣ */
+  padding: 3vw;
+}
+
+/* ለሞባይል ሳይዝ ማስተካከያ (Scaling) */
+@media (max-width: 768px) {
+  .admin-post-section h3 { font-size: 4vw; }
+  .upload-box button { font-size: 3.5vw; padding: 3vw; }
+  .upload-box input[type="file"] { font-size: 3vw; }
+}

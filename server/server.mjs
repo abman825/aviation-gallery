@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
-import axios from 'axios'; // አዲስ ትዕዛዝ ለቴሌግራም ለመላክ
+import axios from 'axios';
 
 const app = express();
 
@@ -18,7 +18,7 @@ if (mongoDBURI) {
         .catch(err => console.error('❌ የዳታቤዝ ስህተት:', err.message));
 }
 
-// Order Schema
+// --- 1. Order Schema (ለደንበኞች ትዕዛዝ) ---
 const orderSchema = new mongoose.Schema({
     customerName: String,
     productName: String,
@@ -27,7 +27,16 @@ const orderSchema = new mongoose.Schema({
 });
 const Order = mongoose.model('Order', orderSchema);
 
-// 1. ሁሉንም ትዕዛዞች ማየት (Admin)
+// --- 2. Gallery Schema (ለአዳዲስ ፖስት ለሚደረጉ ምስሎች) ---
+const gallerySchema = new mongoose.Schema({
+    imageUrl: { type: String, required: true },
+    createdAt: { type: Date, default: Date.now }
+});
+const Gallery = mongoose.model('Gallery', gallerySchema);
+
+// --- ROUTES ---
+
+// ሀ. ትዕዛዞችን ለማየት (Admin)
 app.get('/api/orders', async (req, res) => {
     try {
         const orders = await Order.find().sort({ date: -1 });
@@ -37,7 +46,7 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// 2. ትዕዛዝ መቀበያ እና ለቴሌግራም መላኪያ
+// ለ. ትዕዛዝ መቀበል እና ለTelegram መላክ
 app.post('/api/orders', async (req, res) => {
     try {
         const { customerName, productName, quantity } = req.body;
@@ -45,7 +54,7 @@ app.post('/api/orders', async (req, res) => {
         const newOrder = new Order({ customerName, productName, quantity: quantity || 1 });
         await newOrder.save();
 
-        // --- ለቴሌግራም ቦት መልዕክት መላክ ---
+        // ለቴሌግራም ቦት መላክ
         const botToken = process.env.TELEGRAM_BOT_TOKEN;
         const chatId = process.env.TELEGRAM_CHAT_ID;
         
@@ -60,6 +69,30 @@ app.post('/api/orders', async (req, res) => {
         res.status(201).json({ success: true, message: `ተሳክቷል! እናመሰግናለን ${customerName}!` });
     } catch (error) {
         res.status(500).json({ success: false, error: "ትዕዛዙ አልተሳካም" });
+    }
+});
+
+// ሐ. አዲስ የምስል URL ዳታቤዝ ውስጥ ለማስቀመጥ (Cloudinary Upload ካደረግህ በኋላ)
+app.post('/api/gallery', async (req, res) => {
+    try {
+        const { imageUrl } = req.body;
+        if (!imageUrl) return res.status(400).json({ message: "Image URL is required" });
+
+        const newImage = new Gallery({ imageUrl });
+        await newImage.save();
+        res.status(201).json({ success: true, data: newImage });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "ምስሉን መመዝገብ አልተቻለም" });
+    }
+});
+
+// መ. ሁሉንም ምስሎች ከዳታቤዝ ለማውጣት (ለጋለሪ ገጽ)
+app.get('/api/gallery', async (req, res) => {
+    try {
+        const images = await Gallery.find().sort({ createdAt: -1 });
+        res.status(200).json(images);
+    } catch (error) {
+        res.status(500).json({ success: false, message: "ምስሎችን ማግኘት አልተቻለም" });
     }
 });
 

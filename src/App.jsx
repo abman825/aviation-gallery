@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import './App.css'; 
 
-// ምስሎች እና ቪዲዮዎች (ከአንተ assets ጋር የተያያዙ)
+// ምስሎች (Assets)
 import img1 from './assets/1.jpg';
 import img2 from './assets/2.jpg';
 import img3 from './assets/3.jpg';
@@ -21,6 +21,7 @@ import imgj from './assets/j.jpg';
 import imgk from './assets/k.jpg';
 import imgl from './assets/l.jpg';
 
+// ቪዲዮዎች (Assets)
 import vid1 from './assets/1.mp4';
 import vid2 from './assets/2.mp4'; 
 import vid3 from './assets/3.mp4';
@@ -35,7 +36,6 @@ export default function App() {
   const [showGallery, setShowGallery] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false); 
   const [adminOrders, setAdminOrders] = useState([]); 
-  const [activeTab, setActiveTab] = useState('images');
   const [order, setOrder] = useState({ name: '', orderType: '' });
   const [loading, setLoading] = useState(false);
 
@@ -53,7 +53,7 @@ export default function App() {
         setAdminOrders(data);
         setShowAdmin(true);
       } catch (error) {
-        alert("መረጃውን ማግኘት አልተቻለም!");
+        alert("መረጃ ማግኘት አልተቻለም!");
       } finally {
         setLoading(false);
       }
@@ -62,6 +62,7 @@ export default function App() {
     }
   };
 
+  // ትዕዛዝ ለመላክ
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -87,15 +88,13 @@ export default function App() {
 
   return (
     <div className="app">
+      {/* Navbar ክፍል */}
       <nav className="navbar">
         <div className="nav-container">
           <div className="nav-content">
             <div className="logo">lilmoo</div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              {/* አድሚን በተን እዚህ ጋር ነው */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
               <button onClick={fetchOrders} className="admin-btn">Admin</button>
-              
               <div className="nav-menu">
                 <a href="#home">Home</a>
                 <button onClick={() => setShowGallery(!showGallery)} className="gallery-link-btn">
@@ -107,18 +106,18 @@ export default function App() {
         </div>
       </nav>
 
-      {/* የአድሚን ዝርዝር (Dashboard) */}
+      {/* የአድሚን ዝርዝር Dashboard (Modal) */}
       {showAdmin && (
         <div className="admin-overlay">
           <div className="admin-modal">
-            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: '20px'}}>
+            <div style={{display:'flex', justifyContent:'space-between', marginBottom: '20px'}}>
                <h2 style={{color: '#d63384'}}>የደንበኞች ዝርዝር</h2>
                <button onClick={() => setShowAdmin(false)} className="close-btn">X</button>
             </div>
             <div style={{overflowX: 'auto'}}>
               <table className="admin-table">
                 <thead>
-                  <tr style={{background: '#f8f9fa'}}>
+                  <tr>
                     <th>ስም</th>
                     <th>ልብስ</th>
                     <th>ቀን</th>
@@ -151,7 +150,8 @@ export default function App() {
         </div>
       </section>
 
-      {/* የተቀረው የዌብሳይትህ ክፍል (Gallery, Order Form, Footer) */}
+      {/* Gallery እና ሌሎች ክፍሎች እዚህ ይቀጥላሉ... */}
+
       <footer className="footer">
         <div className="container">
           <p>📍 አዲስ አበባ | 📞 +251919821717</p>

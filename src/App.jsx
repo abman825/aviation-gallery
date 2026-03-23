@@ -68,8 +68,8 @@ export default function App() {
           'Accept': 'application/json' // ይህ በጣም አስፈላጊ ነው
         },
         body: JSON.stringify({
-          name: order.name,
-          orderType: order.orderType
+  customerName: order.name, // name ወደ customerName ተቀይሯል
+  productName: order.orderType // orderType ወደ productName ተቀይሯል
         })
       });
       

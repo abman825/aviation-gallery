@@ -329,13 +329,15 @@
 }
 /* Admin Button Style */
 .admin-btn {
-  background: #d63384;
-  color: white;
-  border: none;
+  background-color: #d63384 !important; /* ደማቅ ሮዝ */
+  color: white !important;
+  display: block !important;
   padding: 8px 15px;
   border-radius: 5px;
   cursor: pointer;
-  margin-left: 10px;
+  border: none;
+  font-weight: bold;
+  z-index: 100;
 }
 
 /* Admin Modal (የዝርዝር ገጹ) */

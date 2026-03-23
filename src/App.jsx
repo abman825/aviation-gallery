@@ -33,18 +33,17 @@ import vid10 from './assets/10.mp4';
 
 export default function App() {
   const [showGallery, setShowGallery] = useState(false);
-  const [showAdmin, setShowAdmin] = useState(false); // Admin ገጽ ለማሳየት
-  const [adminOrders, setAdminOrders] = useState([]); // የትዕዛዝ ዝርዝር
+  const [showAdmin, setShowAdmin] = useState(false); 
+  const [adminOrders, setAdminOrders] = useState([]); 
   const [activeTab, setActiveTab] = useState('images');
   const [order, setOrder] = useState({ name: '', orderType: '' });
   const [loading, setLoading] = useState(false);
 
   const API_URL = "https://aviation-backend-g75i.onrender.com/api/orders";
 
-  // --- Admin Dashboard መረጃን ከሰርቨር ማምጫ ---
   const fetchOrders = async () => {
     const password = prompt("የአድሚን ፓስዎርድ ያስገቡ:");
-    if (password === "1234") { // የፈለግከውን ፓስዎርድ እዚህ ጋር ቀይረው
+    if (password === "1234") { 
       setLoading(true);
       try {
         const response = await fetch(API_URL);
@@ -103,43 +102,50 @@ export default function App() {
         <div className="nav-container">
           <div className="nav-content">
             <div className="logo">lilmoo</div>
-            <div className="nav-menu">
-              <a href="#home">Home</a>
-              <button onClick={() => setShowGallery(!showGallery)} className="gallery-link-btn">
-                {showGallery ? "Close Gallery" : "Gallery"}
-              </button>
+            
+            {/* አዲስ አቀማመጥ፡ በተኑን ከሜኑው አውጥተነዋል */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <button onClick={fetchOrders} className="admin-btn">Admin</button>
+              
+              <div className="nav-menu">
+                <a href="#home">Home</a>
+                <button onClick={() => setShowGallery(!showGallery)} className="gallery-link-btn">
+                  {showGallery ? "Close Gallery" : "Gallery"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Admin Dashboard እዚህ ጋር ይታያል */}
+      {/* Admin Dashboard */}
       {showAdmin && (
         <div className="admin-overlay">
           <div className="admin-modal">
-            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-               <h2>የደንበኞች ትዕዛዝ ዝርዝር</h2>
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: '20px'}}>
+               <h2 style={{color: '#d63384'}}>የደንበኞች ትዕዛዝ ዝርዝር</h2>
                <button onClick={() => setShowAdmin(false)} className="close-btn">X</button>
             </div>
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>ስም</th>
-                  <th>ልብስ</th>
-                  <th>ቀን</th>
-                </tr>
-              </thead>
-              <tbody>
-                {adminOrders.map((ord, i) => (
-                  <tr key={i}>
-                    <td>{ord.customerName}</td>
-                    <td>{ord.productName}</td>
-                    <td>{new Date(ord.date).toLocaleDateString()}</td>
+            <div style={{overflowX: 'auto'}}>
+              <table className="admin-table">
+                <thead>
+                  <tr style={{background: '#f8f9fa'}}>
+                    <th>ስም</th>
+                    <th>ልብስ</th>
+                    <th>ቀን</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {adminOrders.map((ord, i) => (
+                    <tr key={i}>
+                      <td>{ord.customerName}</td>
+                      <td>{ord.productName}</td>
+                      <td>{new Date(ord.date).toLocaleDateString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}
@@ -196,7 +202,7 @@ export default function App() {
             </div>
             <div className="gallery-grid">
               {activeTab === 'images' ? 
-                imagesOnly.map((img, i) => <img key={i} src={img} className="gallery-item" />) :
+                imagesOnly.map((img, i) => <img key={i} src={img} className="gallery-item" alt="gallery" />) :
                 videosOnly.map((vid, i) => <video key={i} controls src={vid} className="gallery-item" />)
               }
             </div>

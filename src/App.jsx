@@ -48,15 +48,21 @@ export default function App() {
     }
   };
 
-  // --- 1. የመሰረዝ ተግባር (አሁን በትክክለኛ ቦታው ነው) ---
+  // --- የመሰረዝ ተግባር ---
   const deleteImage = async (id) => {
     if (window.confirm("ይህ ምስል እንዲጠፋ እርግጠኛ ነህ?")) {
       try {
-        await fetch(`${API_URL}/gallery/${id}`, { method: 'DELETE' });
-        fetchImages(); 
-        alert("ምስሉ ተሰርዟል!");
+        const response = await fetch(`${API_URL}/gallery/${id}`, { 
+          method: 'DELETE' 
+        });
+        if (response.ok) {
+          alert("✅ ምስሉ ተሰርዟል!");
+          fetchImages(); 
+        } else {
+          alert("❌ መሰረዝ አልተቻለም (Server Error)");
+        }
       } catch (err) {
-        alert("መሰረዝ አልተቻለም!");
+        alert("❌ ከሰርቨር ጋር መገናኘት አልተቻለም");
       }
     }
   };
@@ -145,7 +151,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* --- 2. የመሰረዣው ክፍል በአድሚን ሳጥን ውስጥ ተስተካክሏል --- */}
+            {/* ምስሎችን ማስተዳደሪያ (Delete Button እዚህ ብቻ ነው ያለው) */}
             <div className="admin-gallery-list">
               <h3>የጋለሪ ምስሎች አስተዳዳሪ</h3>
               <div className="admin-img-grid">

@@ -749,3 +749,29 @@ body {
   padding: 5px !important;
   width: 100%;
 }
+/* አላስፈላጊ የሆኑ የመሰረዣ በተኖችን ከHome ገጽ ላይ ለማጥፋት */
+.hero-image + .delete-btn, 
+.grid-item .delete-btn {
+  display: none;
+}
+
+/* በአድሚን ሳጥን ውስጥ ብቻ እንዲታዩ */
+.admin-img-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  background: #222;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.delete-btn {
+  background-color: #ff4444 !important;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}

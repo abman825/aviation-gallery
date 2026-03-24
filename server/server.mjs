@@ -45,6 +45,22 @@ app.get('/api/orders', async (req, res) => {
         res.status(500).json({ success: false, message: "መረጃ ማግኘት አልተቻለም" });
     }
 });
+// መ. አንድን ምስል ከGallery ለመሰረዝ (Delete Route)
+app.delete('/api/gallery/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletedImage = await Gallery.findByIdAndDelete(id);
+
+        if (!deletedImage) {
+            return res.status(404).json({ success: false, message: "ምስሉ ዳታቤዝ ውስጥ አልተገኘም" });
+        }
+
+        res.status(200).json({ success: true, message: "ምስሉ በትክክል ተሰርዟል!" });
+    } catch (error) {
+        console.error("መሰረዝ አልተቻለም:", error);
+        res.status(500).json({ success: false, message: "በሰርቨር ስህተት ምክንያት መሰረዝ አልተቻለም" });
+    }
+});
 
 // ለ. ትዕዛዝ መቀበል እና ለTelegram መላክ
 app.post('/api/orders', async (req, res) => {

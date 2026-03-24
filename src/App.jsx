@@ -50,22 +50,17 @@ export default function App() {
 
   // --- የመሰረዝ ተግባር ---
   const deleteImage = async (id) => {
-    if (window.confirm("ይህ ምስል እንዲጠፋ እርግጠኛ ነህ?")) {
-      try {
-        const response = await fetch(`${API_URL}/gallery/${id}`, { 
-          method: 'DELETE' 
-        });
-        if (response.ok) {
-          alert("✅ ምስሉ ተሰርዟል!");
-          fetchImages(); 
-        } else {
-          alert("❌ መሰረዝ አልተቻለም (Server Error)");
-        }
-      } catch (err) {
-        alert("❌ ከሰርቨር ጋር መገናኘት አልተቻለም");
-      }
+  try {
+    const response = await axios.delete(`YOUR_API_URL/${id}`);
+    if (response.status === 200) {
+      alert("ምስሉ በትክክል ተሰርዟል!");
+      // እዚህ ጋር የ state update አድርግ
     }
-  };
+  } catch (error) {
+    console.error("ስህተት ተፈጥሯል:", error);
+    alert("ምስሉን መሰረዝ አልተቻለም።");
+  }
+};
 
   const fetchOrders = async () => {
     const password = prompt("የአድሚን ፓስዎርድ ያስገቡ:");

@@ -99,6 +99,16 @@ export default function App() {
     } finally {
       setUploading(false);
     }
+    const deleteImage = async (id) => {
+  if (window.confirm("ይህ ምስል እንዲጠፋ እርግጠኛ ነህ?")) {
+    try {
+      await fetch(`${API_URL}/gallery/${id}`, { method: 'DELETE' });
+      fetchImages(); // ዝርዝሩን በድጋሚ ለማደስ
+    } catch (err) {
+      alert("መሰረዝ አልተቻለም!");
+    }
+  }
+};
   };
 
   return (
@@ -158,6 +168,17 @@ export default function App() {
           </div>
         </div>
       )}
+      <div className="admin-gallery-list">
+  <h3>የጋለሪ ምስሎች</h3>
+  <div className="admin-img-grid">
+    {dbImages.map((img) => (
+      <div key={img._id} className="admin-img-item">
+        <img src={img.imageUrl} alt="Gallery" />
+        <button onClick={() => deleteImage(img._id)} className="delete-btn">Delete</button>
+      </div>
+    ))}
+  </div>
+</div>
 
       <Routes>
         <Route path="/" element={

@@ -1,4 +1,4 @@
-import axios from 'axios'; // ይህ ካልተጨመረ axios is not defined ይላል
+import axios from 'axios'; 
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import './App.css'; 
@@ -49,19 +49,23 @@ export default function App() {
     }
   };
 
-  // --- የመሰረዝ ተግባር ---
+  // --- የተስተካከለ የመሰረዝ ተግባር ---
   const deleteImage = async (id) => {
-  try {
-    const response = await axios.delete(`YOUR_API_URL/${id}`);
-    if (response.status === 200) {
-      alert("ምስሉ በትክክል ተሰርዟል!");
-      // እዚህ ጋር የ state update አድርግ
+    if (!window.confirm("እርግጠኛ ነህ ይህ ምስል እንዲጠፋ ትፈልጋለህ?")) return;
+
+    try {
+      // API_URL እና id በትክክል ተዋህደዋል
+      const response = await axios.delete(`${API_URL}/gallery/${id}`);
+      
+      if (response.status === 200) {
+        alert("✅ ምስሉ በትክክል ተሰርዟል!");
+        fetchImages(); // ምስሉ ከጠፋ በኋላ ዝርዝሩ እንዲታደስ
+      }
+    } catch (error) {
+      console.error("የመሰረዝ ስህተት:", error);
+      alert("❌ ምስሉን መሰረዝ አልተቻለም (Server Error)");
     }
-  } catch (error) {
-    console.error("ስህተት ተፈጥሯል:", error);
-    alert("ምስሉን መሰረዝ አልተቻለም።");
-  }
-};
+  };
 
   const fetchOrders = async () => {
     const password = prompt("የአድሚን ፓስዎርድ ያስገቡ:");
@@ -128,7 +132,6 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Admin Modal */}
       {showAdmin && (
         <div className="admin-overlay" onClick={() => setShowAdmin(false)}>
           <div className="admin-modal" onClick={e => e.stopPropagation()}>
@@ -147,7 +150,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* ምስሎችን ማስተዳደሪያ (Delete Button እዚህ ብቻ ነው ያለው) */}
             <div className="admin-gallery-list">
               <h3>የጋለሪ ምስሎች አስተዳዳሪ</h3>
               <div className="admin-img-grid">

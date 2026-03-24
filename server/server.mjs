@@ -18,7 +18,7 @@ if (mongoDBURI) {
         .catch(err => console.error('❌ የዳታቤዝ ስህተት:', err.message));
 }
 
-// --- 1. Order Schema (ለደንበኞች ትዕዛዝ) ---
+// Order Schema
 const orderSchema = new mongoose.Schema({
     customerName: String,
     productName: String,
@@ -27,7 +27,7 @@ const orderSchema = new mongoose.Schema({
 });
 const Order = mongoose.model('Order', orderSchema);
 
-// --- 2. Gallery Schema (ለአዳዲስ ፖስት ለሚደረጉ ምስሎች) ---
+// Gallery Schema
 const gallerySchema = new mongoose.Schema({
     imageUrl: { type: String, required: true },
     createdAt: { type: Date, default: Date.now }
@@ -36,7 +36,7 @@ const Gallery = mongoose.model('Gallery', gallerySchema);
 
 // --- ROUTES ---
 
-// ሀ. ትዕዛዞችን ለማየት (Admin)
+// 1. ትዕዛዞችን ለማየት (Admin)
 app.get('/api/orders', async (req, res) => {
     try {
         const orders = await Order.find().sort({ date: -1 });
@@ -45,35 +45,30 @@ app.get('/api/orders', async (req, res) => {
         res.status(500).json({ success: false, message: "መረጃ ማግኘት አልተቻለም" });
     }
 });
-// መ. አንድን ምስል ከGallery ለመሰረዝ (Delete Route)
+
+// 2. ምስልን ከGallery ለመሰረዝ (Delete Route)
 app.delete('/api/gallery/:id', async (req, res) => {
     try {
         const { id } = req.params;
         const deletedImage = await Gallery.findByIdAndDelete(id);
-
         if (!deletedImage) {
             return res.status(404).json({ success: false, message: "ምስሉ ዳታቤዝ ውስጥ አልተገኘም" });
         }
-
         res.status(200).json({ success: true, message: "ምስሉ በትክክል ተሰርዟል!" });
     } catch (error) {
-        console.error("መሰረዝ አልተቻለም:", error);
         res.status(500).json({ success: false, message: "በሰርቨር ስህተት ምክንያት መሰረዝ አልተቻለም" });
     }
 });
 
-// ለ. ትዕዛዝ መቀበል እና ለTelegram መላክ
+// 3. ትዕዛዝ መቀበል እና ለTelegram መላክ
 app.post('/api/orders', async (req, res) => {
     try {
         const { customerName, productName, quantity } = req.body;
-
         const newOrder = new Order({ customerName, productName, quantity: quantity || 1 });
         await newOrder.save();
 
-        // ለቴሌግራም ቦት መላክ
         const botToken = process.env.TELEGRAM_BOT_TOKEN;
         const chatId = process.env.TELEGRAM_CHAT_ID;
-        
         if(botToken && chatId) {
             const message = `👗 አዲስ ትዕዛዝ መጥቷል!\n\n👤 ስም: ${customerName}\n📦 እቃ: ${productName}\n🔢 ብዛት: ${quantity || 1}`;
             await axios.post(`https://api.telegram.org/bot${botToken}/sendMessage`, {
@@ -81,19 +76,17 @@ app.post('/api/orders', async (req, res) => {
                 text: message
             });
         }
-
         res.status(201).json({ success: true, message: `ተሳክቷል! እናመሰግናለን ${customerName}!` });
     } catch (error) {
         res.status(500).json({ success: false, error: "ትዕዛዙ አልተሳካም" });
     }
 });
 
-// ሐ. አዲስ የምስል URL ዳታቤዝ ውስጥ ለማስቀመጥ (Cloudinary Upload ካደረግህ በኋላ)
+// 4. አዲስ ምስል መመዝገብ
 app.post('/api/gallery', async (req, res) => {
     try {
         const { imageUrl } = req.body;
         if (!imageUrl) return res.status(400).json({ message: "Image URL is required" });
-
         const newImage = new Gallery({ imageUrl });
         await newImage.save();
         res.status(201).json({ success: true, data: newImage });
@@ -102,7 +95,7 @@ app.post('/api/gallery', async (req, res) => {
     }
 });
 
-// መ. ሁሉንም ምስሎች ከዳታቤዝ ለማውጣት (ለጋለሪ ገጽ)
+// 5. ሁሉንም ምስሎች ማውጣት
 app.get('/api/gallery', async (req, res) => {
     try {
         const images = await Gallery.find().sort({ createdAt: -1 });

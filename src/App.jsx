@@ -23,7 +23,7 @@ import vid10 from './assets/10.mp4';
 export default function App() {
   const [showAdmin, setShowAdmin] = useState(false); 
   const [adminOrders, setAdminOrders] = useState([]); 
-  const [dbImages, setDbImages] = useState([]); // ዳታቤዝ ውስጥ ያሉ ምስሎች
+  const [dbImages, setDbImages] = useState([]); 
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -31,9 +31,8 @@ export default function App() {
 
   const API_URL = "https://aviation-backend-g75i.onrender.com/api";
   const CLOUD_NAME = "dml3qv23x";
-  const UPLOAD_PRESET = "lilmoo_preset"; // እዚህ ጋር የፈጠርከውን Preset ስም አስገባ
+  const UPLOAD_PRESET = "lilmoo_preset";
 
-  // መረጃዎችን ከBackend መጫኛ
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchImages();
@@ -46,6 +45,19 @@ export default function App() {
       setDbImages(data);
     } catch (err) {
       console.error("Error fetching images");
+    }
+  };
+
+  // --- 1. የመሰረዝ ተግባር (አሁን በትክክለኛ ቦታው ነው) ---
+  const deleteImage = async (id) => {
+    if (window.confirm("ይህ ምስል እንዲጠፋ እርግጠኛ ነህ?")) {
+      try {
+        await fetch(`${API_URL}/gallery/${id}`, { method: 'DELETE' });
+        fetchImages(); 
+        alert("ምስሉ ተሰርዟል!");
+      } catch (err) {
+        alert("መሰረዝ አልተቻለም!");
+      }
     }
   };
 
@@ -70,21 +82,18 @@ export default function App() {
 
   const handleImageUpload = async () => {
     if (!selectedFile) return alert("እባክዎ መጀመሪያ ምስል ይምረጡ!");
-    
     setUploading(true);
     const formData = new FormData();
     formData.append('file', selectedFile);
     formData.append('upload_preset', UPLOAD_PRESET);
 
     try {
-      // 1. Cloudinary ላይ መጫን
       const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
         method: "POST",
         body: formData
       });
       const cloudData = await res.json();
 
-      // 2. URL ወደ Backend መላክ
       await fetch(`${API_URL}/gallery`, {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
@@ -93,22 +102,12 @@ export default function App() {
 
       alert("✅ ምስሉ በሚገባ ፖስት ተደርጓል!");
       setSelectedFile(null);
-      fetchImages(); // ጋለሪውን ለማደስ
+      fetchImages(); 
     } catch (error) {
       alert("❌ ስህተት ተፈጥሯል!");
     } finally {
       setUploading(false);
     }
-    const deleteImage = async (id) => {
-  if (window.confirm("ይህ ምስል እንዲጠፋ እርግጠኛ ነህ?")) {
-    try {
-      await fetch(`${API_URL}/gallery/${id}`, { method: 'DELETE' });
-      fetchImages(); // ዝርዝሩን በድጋሚ ለማደስ
-    } catch (err) {
-      alert("መሰረዝ አልተቻለም!");
-    }
-  }
-};
   };
 
   return (
@@ -127,7 +126,7 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Admin Modal with Order List & Image Upload */}
+      {/* Admin Modal */}
       {showAdmin && (
         <div className="admin-overlay" onClick={() => setShowAdmin(false)}>
           <div className="admin-modal" onClick={e => e.stopPropagation()}>
@@ -143,6 +142,19 @@ export default function App() {
                 <button onClick={handleImageUpload} disabled={uploading}>
                   {uploading ? "በመጫን ላይ..." : "Post to Gallery"}
                 </button>
+              </div>
+            </div>
+
+            {/* --- 2. የመሰረዣው ክፍል በአድሚን ሳጥን ውስጥ ተስተካክሏል --- */}
+            <div className="admin-gallery-list">
+              <h3>የጋለሪ ምስሎች አስተዳዳሪ</h3>
+              <div className="admin-img-grid">
+                {dbImages.map((img) => (
+                  <div key={img._id} className="admin-img-item">
+                    <img src={img.imageUrl} alt="Gallery" />
+                    <button onClick={() => deleteImage(img._id)} className="delete-btn">Delete</button>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -168,17 +180,6 @@ export default function App() {
           </div>
         </div>
       )}
-      <div className="admin-gallery-list">
-  <h3>የጋለሪ ምስሎች</h3>
-  <div className="admin-img-grid">
-    {dbImages.map((img) => (
-      <div key={img._id} className="admin-img-item">
-        <img src={img.imageUrl} alt="Gallery" />
-        <button onClick={() => deleteImage(img._id)} className="delete-btn">Delete</button>
-      </div>
-    ))}
-  </div>
-</div>
 
       <Routes>
         <Route path="/" element={
@@ -189,7 +190,7 @@ export default function App() {
               <div className="hero-content fade-in-up">
                 <span className="hero-subtitle">Elegance in Every Stitch</span>
                 <h1>Lilmoo Design</h1>
-                <p>ልዩ ለሆኑ ህጻናት፣ ልዩ የሆኑ ዲዛይኖች። ጥራትን ከውበት ጋር አቀናጅተን እናቀርባለን።</p>
+                <p>ልዩ ለሆኑ ህፃናት፣ ልዩ የሆኑ ዲዛይኖች። ጥራትን ከውበት ጋር አቀናጅተን እናቀርባለን።</p>
                 <div className="hero-features">
                   <span>✨ Premium Quality</span><span>🧵 Unique Designs</span><span>💖 Pure Comfort</span>
                 </div>
@@ -207,13 +208,11 @@ export default function App() {
             <div className="container">
               <h2 className="section-title">Exclusive Collection</h2>
               <div className="image-grid">
-                {/* መጀመሪያ ከዳታቤዝ የመጡት አዳዲስ ምስሎች */}
                 {dbImages.map((img, i) => (
                   <div key={`db-${i}`} className="grid-item">
                     <img src={img.imageUrl} alt="New Design" loading="lazy" />
                   </div>
                 ))}
-                {/* ከዚያ ቋሚ የሆኑት አሮጌ ምስሎች */}
                 {[img1, img2, img3, img4, img5, img6, imga, imgb, imgc, imgd, imge, imgf, imgg, imgh, imgi, imgj, imgk, imgl].map((pic, i) => (
                   <div key={`asset-${i}`} className="grid-item">
                     <img src={pic} alt="Asset" loading="lazy" />

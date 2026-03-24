@@ -1,3 +1,4 @@
+import axios from 'axios'; // ይህ ካልተጨመረ axios is not defined ይላል
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import './App.css'; 

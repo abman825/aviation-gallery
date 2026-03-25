@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = import('mongoose');
 
 const GallerySchema = new mongoose.Schema({
   imageUrl: { type: String, required: true },

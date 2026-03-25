@@ -50,7 +50,9 @@ app.post('/api/orders', async (req, res) => {
             await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, { chat_id: process.env.TELEGRAM_CHAT_ID, text: msg });
         }
         res.status(201).json({ success: true });
-    } catch (err) { res.status(500).send(err); }
+    }} catch (error) {
+    console.error("Chapa Error:", error.response ? error.response.data : error.message);
+    res.status(500).json({ message: "Payment failed", error: error.message })
 });
 
 // 4. Chapa Payment (ይህ አዲሱ ክፍል ነው)

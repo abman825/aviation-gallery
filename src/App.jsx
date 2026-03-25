@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import './App.css'; 
+import ChapaPayment from './ChapaPayment';
 
 // Assets (Images)
 import img1 from './assets/1.jpg'; import img2 from './assets/2.jpg';
@@ -221,7 +222,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16 mb-20">
           <div className="space-y-8">
             <h3 className="text-5xl font-black text-purple-500 italic tracking-tighter">lilmoo</h3>
-            <p className="text-gray-400 leading-relaxed text-xl font-medium">በጥራት እና በውበት የተሰሩ የሴቶች አልባሳትን ወደ እርስዎ እናደርሳለን። ዘመናዊነትን ከባህላዊ እሴቶች ጋር አዋህደን የምንሰራበት ቦታ።</p>
+            <p className="text-gray-400 leading-relaxed text-xl font-medium">ጥራት እና ውበት የተሰሩ የሴቶች አልባሳትን ወደ እርሶ እናደርሳለን። ዘመናዊነትን ከባህላዊ እሴቶች ጋር አዋህደን የምንሰራበት ቦታ።</p>
             <div className="flex gap-6 text-3xl text-purple-400">
               <a href="#" className="hover:text-pink-500 transition-all transform hover:scale-110">📸</a>
               <a href="#" className="hover:text-pink-500 transition-all transform hover:scale-110">✈️</a>
@@ -275,7 +276,7 @@ function OrderForm({ API_URL }) {
     finally { setLoading(false); }
   };
   return (
-    <section className="py-32 px-6 min-h-[80vh] flex items-center bg-purple-50 justify-center">
+    <section className="py-32 px-6 min-h-[80vh] flex flex-col items-center bg-purple-50 justify-center gap-10">
       <div className="max-w-md w-full bg-white p-12 rounded-[40px] shadow-2xl border border-purple-100">
         <h2 className="text-4xl font-black mb-10 text-center tracking-tighter">አዲስ ትዕዛዝ</h2>
         <form onSubmit={handleOrderSubmit} className="space-y-8">
@@ -289,6 +290,12 @@ function OrderForm({ API_URL }) {
           </div>
           <button type="submit" className="w-full py-5 bg-purple-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-purple-200 hover:bg-purple-700 transition transform active:scale-95" disabled={loading}>{loading ? "በመላክ ላይ..." : "ትዕዛዝ ይላኩ"}</button>
         </form>
+      </div>
+
+      {/* Chapa Payment Integration */}
+      <div className="max-w-md w-full text-center">
+        <p className="text-gray-500 font-bold mb-4 uppercase text-xs tracking-widest">ወይም ቀጥታ ይክፈሉ</p>
+        <ChapaPayment />
       </div>
     </section>
   );

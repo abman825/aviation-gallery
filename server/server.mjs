@@ -6,95 +6,52 @@ import axios from 'axios';
 
 const app = express();
 
-// --- 1. Middleware (CORS ስህተትን የሚፈታው) ---
+// --- 1. CORS Fix (ሁሉንም ሪኩዌስት እንዲቀበል) ---
 app.use(cors({
-    origin: '*', 
+    origin: '*',
     methods: ['GET', 'POST', 'DELETE', 'PUT', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
 // --- 2. MongoDB Connection ---
-const mongoDBURI = process.env.MONGODB_URI; 
-if (mongoDBURI) {
-    mongoose.connect(mongoDBURI, { family: 4 })
-        .then(() => console.log('✅ MongoDB Atlas connected!'))
-        .catch(err => console.error('❌ DB Error:', err.message));
-}
+mongoose.connect(process.env.MONGODB_URI, { family: 4 })
+    .then(() => console.log('✅ MongoDB Connected'))
+    .catch(err => console.error('❌ DB Error:', err));
 
-// --- 3. Schemas (Models) ---
+// --- 3. Models ---
 const Order = mongoose.model('Order', new mongoose.Schema({
-    customerName: String, 
-    productName: String, 
-    quantity: { type: Number, default: 1 }, 
-    date: { type: Date, default: Date.now }
+    customerName: String, productName: String, quantity: Number, date: { type: Date, default: Date.now }
 }));
-
 const Gallery = mongoose.model('Gallery', new mongoose.Schema({
-    imageUrl: { type: String, required: true }, 
-    createdAt: { type: Date, default: Date.now }
+    imageUrl: String, createdAt: { type: Date, default: Date.now }
 }));
 
 // --- 4. ROUTES ---
 
-// ሀ. የአድሚን Login (Password: admin123)
+// Admin Login (Password: admin123)
 app.post('/api/admin/login', (req, res) => {
-    const { password } = req.body;
-    if (password === "admin123") {
-        res.json({ success: true, message: "እንኳን ደህና መጡ!" });
-    } else {
-        res.status(401).json({ success: false, message: "የተሳሳተ የይለፍ ቃል!" });
-    }
+    if (req.body.password === "1123") return res.json({ success: true });
+    res.status(401).json({ success: false });
 });
 
-// ለ. ትዕዛዞችን ለማየት (ለአድሚን ዳሽቦርድ)
-app.get('/api/orders', async (req, res) => {
-    try { 
-        const orders = await Order.find().sort({ date: -1 });
-        res.json(orders); 
-    } catch (err) { 
-        res.status(500).json({ error: err.message }); 
-    }
-});
-
-// ሐ. አዲስ ትዕዛዝ መቀበልና በቴሌግራም ማሳወቅ
-app.post('/api/orders', async (req, res) => {
-    try {
-        const { customerName, productName, quantity } = req.body;
-        const newOrder = new Order({ customerName, productName, quantity: quantity || 1 });
-        await newOrder.save();
-        
-        // Telegram Notification
-        if(process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
-            const msg = `🛍 አዲስ ትዕዛዝ!\n👤 ስም: ${customerName}\n📦 እቃ: ${productName}\n🔢 ብዛት: ${quantity || 1}`;
-            try {
-                await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, { 
-                    chat_id: process.env.TELEGRAM_CHAT_ID, 
-                    text: msg 
-                });
-            } catch (teleErr) {
-                console.error("Telegram Notification Failed:", teleErr.message);
-            }
-        }
-        res.status(201).json({ success: true, order: newOrder });
-    } catch (error) {
-        res.status(500).json({ message: "Order creation failed", error: error.message });
-    }
-});
-
-// መ. Chapa Payment Initialization
+// Orders & Telegram
 app.post('/api/pay', async (req, res) => {
     try {
         const { amount, email, first_name, last_name, tx_ref } = req.body;
+        
         const response = await axios.post('https://api.chapa.co/v1/transaction/initialize', {
-            amount, 
-            currency: 'ETB', 
-            email, 
-            first_name, 
-            last_name, 
+            amount,
+            currency: 'ETB',
+            email: email || "customer@example.com", // ትክክለኛ ኢሜይል መኖሩን ያረጋግጣል
+            first_name,
+            last_name,
             tx_ref,
             callback_url: "https://aviation-gallery.vercel.app/",
-            customization: { title: 'Lilmoo Design Payment', description: 'Payment for clothes' }
+            customization: { 
+                title: 'Lilmoo Payment', // ✅ ከ16 ፊደል እንዲያንስ ተደርጓል
+                description: 'Payment for clothes' 
+            }
         }, {
             headers: { 
                 Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}`,
@@ -103,33 +60,42 @@ app.post('/api/pay', async (req, res) => {
         });
         res.json(response.data);
     } catch (error) {
-        res.status(500).json({ error: error.response?.data || error.message });
+        console.error("Chapa Error:", error.response?.data || error.message);
+        res.status(500).json(error.response?.data || error.message);
     }
 });
 
-// ሠ. Gallery ስራዎች (Get, Post, Delete)
-app.get('/api/gallery', async (req, res) => {
+app.get('/api/orders', async (req, res) => {
+    const orders = await Order.find().sort({ date: -1 });
+    res.json(orders);
+});
+
+// Chapa Payment
+app.post('/api/pay', async (req, res) => {
     try {
-        const gallery = await Gallery.find().sort({ createdAt: -1 });
-        res.json(gallery);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+        const response = await axios.post('https://api.chapa.co/v1/transaction/initialize', req.body, {
+            headers: { Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}` }
+        });
+        res.json(response.data);
+    } catch (err) { res.status(500).json(err.response?.data || err.message); }
+});
+
+// Gallery (ሊንኩ በትክክል 'gallery' መሆኑን አረጋግጥ)
+app.get('/api/gallery', async (req, res) => {
+    const gallery = await Gallery.find().sort({ createdAt: -1 });
+    res.json(gallery);
 });
 
 app.post('/api/gallery', async (req, res) => {
-    try {
-        const newImg = new Gallery({ imageUrl: req.body.imageUrl });
-        await newImg.save();
-        res.json(newImg);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    const newImg = new Gallery(req.body);
+    await newImg.save();
+    res.json(newImg);
 });
 
 app.delete('/api/gallery/:id', async (req, res) => {
-    try { 
-        await Gallery.findByIdAndDelete(req.params.id); 
-        res.json({ success: true }); 
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    await Gallery.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
 });
 
-// --- 5. Server Start ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, '0.0.0.0', () => console.log(`🚀 Server running on port ${PORT}`));

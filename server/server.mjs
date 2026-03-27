@@ -80,7 +80,7 @@ app.post('/api/pay', async (req, res) => {
                     Authorization: `Bearer ${CHAPA_SECRET_KEY}`,
                     'Content-Type': 'application/json'
                 }
-            }
+            } 
         );
 
         if (response.data.status === 'success') {

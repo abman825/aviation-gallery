@@ -67,7 +67,7 @@ app.post('/api/pay', async (req, res) => {
             {
                 amount: amount,
                 currency: 'ETB',
-                email: email || 'customer@lilmoo.com',
+                email: email || 'abrhamman825@gmail.com',
                 first_name: customerName,
                 tx_ref: tx_ref,
                 callback_url: "https://aviation-backend-g75i.onrender.com/api/verify-payment",

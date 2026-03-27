@@ -36,7 +36,7 @@ const Gallery = mongoose.model('Gallery', GallerySchema);
 
 // --- A. Gallery Routes ---
 
-// 1. ሁሉንም የጋለሪ ፎቶዎች ለማምጣት (ይህ በጣም አስፈላጊ ነው!)
+// 1. ሁሉንም የጋለሪ ፎቶዎች ለማምጣት (ይህ 404 ስህተቱን ይፈታል)
 app.get('/api/gallery', async (req, res) => {
     try {
         const images = await Gallery.find().sort({ date: -1 });
@@ -46,7 +46,7 @@ app.get('/api/gallery', async (req, res) => {
     }
 });
 
-// 2. አዲስ ፎቶ ለመጫን
+// 2. አዲስ ፎቶ በሊንክ ለመጫን
 app.post('/api/gallery', async (req, res) => {
     try {
         const { imageUrl } = req.body;
@@ -72,7 +72,6 @@ app.delete('/api/gallery/:id', async (req, res) => {
 
 // --- B. Order Routes ---
 
-// 1. አዲስ ትዕዛዝ ለመቀበል
 app.post('/api/orders', async (req, res) => {
     try {
         const { customerName, productName, quantity } = req.body;
@@ -84,21 +83,10 @@ app.post('/api/orders', async (req, res) => {
     }
 });
 
-// 2. ሁሉንም ትዕዛዞች ለማየት (ለአድሚን)
 app.get('/api/orders', async (req, res) => {
     try {
         const orders = await Order.find().sort({ date: -1 });
         res.json(orders);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
-// 3. ትዕዛዝ ለመሰረዝ (ለአድሚን)
-app.delete('/api/orders/:id', async (req, res) => {
-    try {
-        await Order.findByIdAndDelete(req.params.id);
-        res.json({ success: true, message: "ትዕዛዙ ተሰርዟል" });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

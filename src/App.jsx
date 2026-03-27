@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import './App.css'; 
 
-// Assets - እነዚህ ፋይሎች በ assets ፎልደር ውስጥ መኖራቸውን አረጋግጥ
 import img1 from './assets/1.jpg'; import img2 from './assets/2.jpg';
 import img3 from './assets/3.jpg'; import img4 from './assets/4.jpg';
 import imga from './assets/a.jpg'; import imgb from './assets/b.jpg';
@@ -10,8 +9,8 @@ import imga from './assets/a.jpg'; import imgb from './assets/b.jpg';
 export default function App() {
   const [showAdmin, setShowAdmin] = useState(false); 
   const [adminOrders, setAdminOrders] = useState([]); 
-  const [dbImages, setDbImages] = useState([]); // ለጋለሪው ዳታ የሚያስፈልገው ስቴት
-  const [imgUrl, setImgUrl] = useState("");
+  const [dbImages, setDbImages] = useState([]); 
+  const [selectedFile, setSelectedFile] = useState(null); // ፋይሉን ለመያዝ
   const { pathname } = useLocation();
 
   const API_URL = "https://aviation-backend-g75i.onrender.com/api"; 
@@ -42,16 +41,19 @@ export default function App() {
   };
 
   const handleUploadImage = async () => {
-    if(!imgUrl) return alert("እባክህ የፎቶ ሊንክ አስገባ");
+    if(!selectedFile) return alert("እባክህ መጀመሪያ ፎቶ ምረጥ");
+    
+    const formData = new FormData();
+    formData.append('image', selectedFile);
+
     try {
         const res = await fetch(`${API_URL}/gallery`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageUrl: imgUrl })
+            body: formData
         });
         if(res.ok) {
-            alert("ፎቶ ተጭኗል!");
-            setImgUrl("");
+            alert("ፎቶው ተጭኗል!");
+            setSelectedFile(null);
             fetchImages(); 
         }
     } catch (err) { alert("መጫን አልተቻለም"); }
@@ -113,13 +115,18 @@ export default function App() {
             <div className="mt-12 border-t pt-8">
                 <h3 className="text-xl font-bold mb-4 text-purple-700">Manage Gallery</h3>
                 <div className="flex gap-2 mb-6">
-                    <input type="text" placeholder="Image URL Here..." value={imgUrl} onChange={(e) => setImgUrl(e.target.value)} className="flex-1 p-3 border rounded-xl outline-none focus:ring-2 focus:ring-purple-500" />
-                    <button onClick={handleUploadImage} className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold">Upload</button>
+                    <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={(e) => setSelectedFile(e.target.files[0])} 
+                        className="flex-1 p-3 border rounded-xl outline-none focus:ring-2 focus:ring-purple-500" 
+                    />
+                    <button onClick={handleUploadImage} className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold">Upload File</button>
                 </div>
                 <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
                     {dbImages.map((img) => (
                         <div key={img._id} className="relative group aspect-square">
-                            <img src={img.imageUrl} className="w-full h-full object-cover rounded-lg shadow-sm" />
+                            <img src={img.imageUrl} className="w-full h-full object-cover rounded-lg shadow-sm" alt="Gallery" />
                             <button onClick={() => deleteImage(img._id)} className="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 rounded-full opacity-0 group-hover:opacity-100 transition">&times;</button>
                         </div>
                     ))}
@@ -133,7 +140,7 @@ export default function App() {
         <Route path="/" element={
           <section className="relative h-[80vh] flex items-center justify-center text-center">
             <div>
-              <h1 className="text-6xl md:text-8xl font-black text-purple-700 mb-6">Lilmoo Design</h1>
+              <h1 className="text-6xl md:text-88xl font-black text-purple-700 mb-6">Lilmoo Design</h1>
               <p className="text-xl text-gray-600 mb-10">ልዩ ዲዛይኖችን በጥራት እናቀርባለን።</p>
               <Link to="/order" className="px-12 py-5 bg-purple-600 text-white rounded-full font-black shadow-lg hover:bg-purple-700 transition">Order Now</Link>
             </div>

@@ -2,41 +2,55 @@ import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 const app = express();
 
-// --- 1. Middleware ---
+// --- Middleware ---
 app.use(cors());
 app.use(express.json());
 
-// --- 2. MongoDB Connection ---
+// --- Multer Setup (ፎቶዎችን ለመቀበል) ---
+const uploadDir = 'uploads';
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage: storage });
+app.use('/uploads', express.static('uploads')); // ፎቶዎቹ በሊንክ እንዲታዩ
+
+// --- MongoDB Connection ---
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('✅ MongoDB Connected'))
     .catch(err => console.error('❌ DB Error:', err));
 
-// --- 3. Models ---
-
-// Order Model
-const OrderSchema = new mongoose.Schema({
+// --- Models ---
+const Order = mongoose.model('Order', new mongoose.Schema({
     customerName: String, 
     productName: String, 
     quantity: { type: String, default: "1" }, 
     date: { type: Date, default: Date.now }
-});
-const Order = mongoose.model('Order', OrderSchema);
+}));
 
-// Gallery Model
-const GallerySchema = new mongoose.Schema({
+const Gallery = mongoose.model('Gallery', new mongoose.Schema({
     imageUrl: String,
     date: { type: Date, default: Date.now }
-});
-const Gallery = mongoose.model('Gallery', GallerySchema);
+}));
 
-// --- 4. ROUTES ---
+// --- ROUTES ---
 
-// --- A. Gallery Routes ---
-
-// 1. ሁሉንም የጋለሪ ፎቶዎች ለማምጣት (ይህ 404 ስህተቱን ይፈታል)
+// 1. ሁሉንም የጋለሪ ፎቶዎች ማምጣት
 app.get('/api/gallery', async (req, res) => {
     try {
         const images = await Gallery.find().sort({ date: -1 });
@@ -46,11 +60,13 @@ app.get('/api/gallery', async (req, res) => {
     }
 });
 
-// 2. አዲስ ፎቶ በሊንክ ለመጫን
-app.post('/api/gallery', async (req, res) => {
+// 2. አዲስ ፎቶ በፋይል መጫን (Updated with Multer)
+app.post('/api/gallery', upload.single('image'), async (req, res) => {
     try {
-        const { imageUrl } = req.body;
-        if (!imageUrl) return res.status(400).json({ error: "Image URL ያስፈልጋል" });
+        if (!req.file) return res.status(400).json({ error: "እባክህ ፋይል ምረጥ" });
+        
+        // የፎቶውን ሙሉ ሊንክ መፍጠር
+        const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
         
         const newImage = new Gallery({ imageUrl });
         await newImage.save();
@@ -60,7 +76,6 @@ app.post('/api/gallery', async (req, res) => {
     }
 });
 
-// 3. ፎቶ ለመሰረዝ
 app.delete('/api/gallery/:id', async (req, res) => {
     try {
         await Gallery.findByIdAndDelete(req.params.id);
@@ -70,8 +85,7 @@ app.delete('/api/gallery/:id', async (req, res) => {
     }
 });
 
-// --- B. Order Routes ---
-
+// Order Routes
 app.post('/api/orders', async (req, res) => {
     try {
         const { customerName, productName, quantity } = req.body;
@@ -92,6 +106,5 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// --- 5. Server Start ---
 const PORT = process.env.PORT || 10000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

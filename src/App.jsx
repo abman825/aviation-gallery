@@ -184,8 +184,7 @@ function OrderForm({ API_URL }) {
         body: JSON.stringify({ 
           customerName: order.name, 
           productName: order.orderType,
-          amount: "150", // ዋጋው 150 ብር ቢሆን
-          email: "customer@lilmoo.com" 
+          amount: "150", // ዋጋው 150 ብር ቢሆን 
         })
       });
 

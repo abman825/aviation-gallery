@@ -4,7 +4,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import './App.css'; 
 import ChapaPayment from './ChapaPayment';
 
-// Assets (Images)
+// Assets (Images) - እነዚህ ፋይሎች በ assets ፎልደር ውስጥ መኖራቸውን እርግጠኛ ሁን
 import img1 from './assets/1.jpg'; import img2 from './assets/2.jpg';
 import img3 from './assets/3.jpg'; import img4 from './assets/4.jpg';
 import img5 from './assets/5.jpg'; import img6 from './assets/6.jpg';
@@ -30,7 +30,8 @@ export default function App() {
   const [selectedFile, setSelectedFile] = useState(null);
   const { pathname } = useLocation();
 
-  const API_URL = "https://aviation-backend-g75i.onrender.com/api";
+  // ማሳሰቢያ፡ ይህ URL በ Render ላይ ካለው Backend URL ጋር አንድ መሆኑን አረጋግጥ
+  const API_URL = "https://aviation-backend-q75.onrender.com/api"; 
   const CLOUD_NAME = "dml3qv23x";
   const UPLOAD_PRESET = "lilmoo_preset";
 
@@ -43,8 +44,12 @@ export default function App() {
     try {
       const res = await fetch(`${API_URL}/gallery`);
       const data = await res.json();
-      setDbImages(data);
-    } catch (err) { console.error(err); }
+      if (Array.isArray(data)) {
+        setDbImages(data);
+      }
+    } catch (err) { 
+      console.error("Gallery Fetch Error:", err); 
+    }
   };
 
   const deleteImage = async (id) => {
@@ -53,7 +58,9 @@ export default function App() {
       await axios.delete(`${API_URL}/gallery/${id}`);
       alert("✅ ምስሉ ተሰርዟል!");
       fetchImages();
-    } catch (error) { alert("❌ መሰረዝ አልተቻለም"); }
+    } catch (error) { 
+      alert("❌ መሠረዝ አልተቻለም"); 
+    }
   };
 
   const fetchOrders = async () => {
@@ -64,8 +71,12 @@ export default function App() {
         const data = await response.json();
         setAdminOrders(data);
         setShowAdmin(true);
-      } catch (error) { alert("መረጃ ማግኘት አልተቻለም!"); }
-    } else { alert("የተሳሳተ ፓስዎርድ!"); }
+      } catch (error) { 
+        alert("መረጃ ማግኘት አልተቻለም!"); 
+      }
+    } else { 
+      alert("የተሳሳተ ፓስዎርድ!"); 
+    }
   };
 
   const handleImageUpload = async () => {
@@ -81,16 +92,21 @@ export default function App() {
         body: formData
       });
       const cloudData = await res.json();
+      
       await fetch(`${API_URL}/gallery`, {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ imageUrl: cloudData.secure_url })
       });
+      
       alert("✅ ተጭኗል!");
       setSelectedFile(null);
       fetchImages(); 
-    } catch (error) { alert("❌ ስህተት ተፈጥሯል!"); }
-    finally { setUploading(false); }
+    } catch (error) { 
+      alert("❌ ስህተት ተፈጥሯል!"); 
+    } finally { 
+      setUploading(false); 
+    }
   };
 
   return (
@@ -131,7 +147,7 @@ export default function App() {
                 <div className="grid grid-cols-4 gap-2 max-h-40 overflow-y-auto p-1">
                   {dbImages.map((img) => (
                     <div key={img._id} className="relative group aspect-square">
-                      <img src={img.imageUrl} className="w-full h-full object-cover rounded-lg shadow-sm" />
+                      <img src={img.imageUrl} className="w-full h-full object-cover rounded-lg shadow-sm" alt="Gallery" />
                       <button onClick={() => deleteImage(img._id)} className="absolute inset-0 bg-red-600/80 text-white text-[10px] font-bold opacity-0 group-hover:opacity-100 rounded-lg transition flex items-center justify-center">DELETE</button>
                     </div>
                   ))}
@@ -193,12 +209,12 @@ export default function App() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
               {dbImages.map((img, i) => (
                 <div key={`db-${i}`} className="aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl hover:scale-[1.02] transition-transform">
-                   <img src={img.imageUrl} className="w-full h-full object-cover" loading="lazy" />
+                   <img src={img.imageUrl} className="w-full h-full object-cover" loading="lazy" alt="Collection" />
                 </div>
               ))}
               {[img1, img2, img3, img4, img5, img6, imga, imgb, imgc, imgd, imge, imgf, imgg, imgh, imgi, imgj, imgk, imgl].map((pic, i) => (
                 <div key={`st-${i}`} className="aspect-[3/4] rounded-3xl overflow-hidden shadow-xl hover:scale-[1.02] transition-transform">
-                   <img src={pic} className="w-full h-full object-cover" loading="lazy" />
+                   <img src={pic} className="w-full h-full object-cover" loading="lazy" alt="Static" />
                 </div>
               ))}
             </div>
@@ -222,7 +238,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-16 mb-20">
           <div className="space-y-8">
             <h3 className="text-5xl font-black text-purple-500 italic tracking-tighter">lilmoo</h3>
-            <p className="text-gray-400 leading-relaxed text-xl font-medium">ጥራት እና ውበት የተሰሩ የሴቶች አልባሳትን ወደ እርሶ እናደርሳለን። ዘመናዊነትን ከባህላዊ እሴቶች ጋር አዋህደን የምንሰራበት ቦታ።</p>
+            <p className="text-gray-400 leading-relaxed text-xl font-medium">ጥራት እና ውበት የተሰሩ የሴቶች አልባሳትን ወደ እርስዎ እናደርሳለን። ዘመናዊነትን ከባህላዊ እሴቶች ጋር አዋህደን የምንሰራበት ቦታ።</p>
             <div className="flex gap-6 text-3xl text-purple-400">
               <a href="#" className="hover:text-pink-500 transition-all transform hover:scale-110">📸</a>
               <a href="#" className="hover:text-pink-500 transition-all transform hover:scale-110">✈️</a>
@@ -249,10 +265,6 @@ export default function App() {
         </div>
         <div className="max-w-7xl mx-auto border-t border-gray-900 pt-10 flex flex-col md:row justify-between items-center text-gray-500 text-sm gap-6 font-bold uppercase tracking-widest">
           <p>&copy; {new Date().getFullYear()} <span className="text-purple-500">Lilmoo Design</span>. Crafting Excellence.</p>
-          <div className="flex gap-10">
-            <a href="#" className="hover:text-white transition underline underline-offset-8">Privacy</a>
-            <a href="#" className="hover:text-white transition underline underline-offset-8">Terms</a>
-          </div>
         </div>
       </footer>
     </div>
@@ -262,6 +274,7 @@ export default function App() {
 function OrderForm({ API_URL }) {
   const [order, setOrder] = useState({ name: '', orderType: '' });
   const [loading, setLoading] = useState(false);
+
   const handleOrderSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -269,12 +282,27 @@ function OrderForm({ API_URL }) {
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerName: order.name, productName: order.orderType })
+        body: JSON.stringify({ 
+          customerName: order.name, 
+          productName: order.orderType,
+          quantity: 1 // Backend ለሚጠብቀው ዳታ
+        })
       });
-      if (res.ok) { alert("✅ ትዕዛዝዎ ደርሶናል!"); setOrder({ name: '', orderType: '' }); }
-    } catch (err) { alert("❌ ስህተት!"); }
-    finally { setLoading(false); }
+
+      if (res.ok) { 
+        alert("✅ ትዕዛዝዎ ደርሶናል!"); 
+        setOrder({ name: '', orderType: '' }); 
+      } else {
+        const errorData = await res.json();
+        alert(`❌ ስህተት: ${errorData.message || "ትዕዛዝ ማስተላለፍ አልተቻለም"}`);
+      }
+    } catch (err) { 
+      alert("❌ የኢንተርኔት ወይም የሰርቨር ግንኙነት ችግር!"); 
+    } finally { 
+      setLoading(false); 
+    }
   };
+
   return (
     <section className="py-32 px-6 min-h-[80vh] flex flex-col items-center bg-purple-50 justify-center gap-10">
       <div className="max-w-md w-full bg-white p-12 rounded-[40px] shadow-2xl border border-purple-100">
@@ -294,7 +322,7 @@ function OrderForm({ API_URL }) {
 
       {/* Chapa Payment Integration */}
       <div className="max-w-md w-full text-center">
-        <p className="text-gray-500 font-bold mb-4 uppercase text-xs tracking-widest">ወይም ቀጥታ ይክፈሉ</p>
+        <p className="text-gray-500 font-bold mb-4 uppercase text-xs tracking-widest">ወይም በቀጥታ ይክፈሉ</p>
         <ChapaPayment />
       </div>
     </section>

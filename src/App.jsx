@@ -15,7 +15,7 @@ export default function App() {
   const { pathname } = useLocation();
 
   // 💡 Localhost ላይ ከሆንክ ሰርቨርህ በ 10000 ፖርት መሆኑን አረጋግጥ
-  const API_URL = "http://localhost:10000/api"; 
+  const API_URL = "https://aviation-backend-g75i.onrender.com/api"; 
   // ለ Render ስትሰቅለው ይህንን ተጠቀም፡ "https://aviation-backend-g75i.onrender.com/api"
 
   useEffect(() => {

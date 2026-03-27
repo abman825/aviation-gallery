@@ -10,7 +10,7 @@ export default function App() {
   const [showAdmin, setShowAdmin] = useState(false); 
   const [adminOrders, setAdminOrders] = useState([]); 
   const [dbImages, setDbImages] = useState([]); 
-  const [selectedFile, setSelectedFile] = useState(null); // ፋይሉን ለመያዝ
+  const [selectedFile, setSelectedFile] = useState(null); 
   const { pathname } = useLocation();
 
   const API_URL = "https://aviation-backend-g75i.onrender.com/api"; 
@@ -42,15 +42,10 @@ export default function App() {
 
   const handleUploadImage = async () => {
     if(!selectedFile) return alert("እባክህ መጀመሪያ ፎቶ ምረጥ");
-    
     const formData = new FormData();
     formData.append('image', selectedFile);
-
     try {
-        const res = await fetch(`${API_URL}/gallery`, {
-            method: 'POST',
-            body: formData
-        });
+        const res = await fetch(`${API_URL}/gallery`, { method: 'POST', body: formData });
         if(res.ok) {
             alert("ፎቶው ተጭኗል!");
             setSelectedFile(null);
@@ -115,12 +110,7 @@ export default function App() {
             <div className="mt-12 border-t pt-8">
                 <h3 className="text-xl font-bold mb-4 text-purple-700">Manage Gallery</h3>
                 <div className="flex gap-2 mb-6">
-                    <input 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={(e) => setSelectedFile(e.target.files[0])} 
-                        className="flex-1 p-3 border rounded-xl outline-none focus:ring-2 focus:ring-purple-500" 
-                    />
+                    <input type="file" accept="image/*" onChange={(e) => setSelectedFile(e.target.files[0])} className="flex-1 p-3 border rounded-xl" />
                     <button onClick={handleUploadImage} className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold">Upload File</button>
                 </div>
                 <div className="grid grid-cols-3 md:grid-cols-5 gap-4">
@@ -140,7 +130,7 @@ export default function App() {
         <Route path="/" element={
           <section className="relative h-[80vh] flex items-center justify-center text-center">
             <div>
-              <h1 className="text-6xl md:text-88xl font-black text-purple-700 mb-6">Lilmoo Design</h1>
+              <h1 className="text-6xl md:text-8xl font-black text-purple-700 mb-6">Lilmoo Design</h1>
               <p className="text-xl text-gray-600 mb-10">ልዩ ዲዛይኖችን በጥራት እናቀርባለን።</p>
               <Link to="/order" className="px-12 py-5 bg-purple-600 text-white rounded-full font-black shadow-lg hover:bg-purple-700 transition">Order Now</Link>
             </div>
@@ -165,7 +155,8 @@ export default function App() {
           </section>
         } />
 
-        <Route path="/order" element={<OrderForm API_URL={`${API_URL}/orders`} />} />
+        <Route path="/order" element={<OrderForm API_URL={API_URL} />} />
+        <Route path="/success" element={<div className="h-screen flex items-center justify-center text-3xl font-bold text-green-600">✅ ክፍያዎ ተፈጽሟል! እናመሰግናለን።</div>} />
       </Routes>
     </div>
   );
@@ -179,16 +170,22 @@ function OrderForm({ API_URL }) {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(API_URL, {
+      const res = await fetch(`${API_URL}/pay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerName: order.name, productName: order.orderType })
+        body: JSON.stringify({ 
+          customerName: order.name, 
+          productName: order.orderType, 
+          amount: "100" 
+        })
       });
-      if (res.ok) { 
-        alert("✅ ትዕዛዝዎ ደርሶናል!"); 
-        setOrder({ name: '', orderType: '' }); 
-      } else { alert("❌ ትዕዛዝ ማስተላለፍ አልተቻለም"); }
-    } catch (err) { alert("❌ የሰርቨር ግንኙነት የለም!"); } finally { setLoading(false); }
+      const data = await res.json();
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        alert("ስህተት ተፈጥሯል");
+      }
+    } catch (err) { alert("ከሰርቨር ጋር መገናኘት አልተቻለም!"); } finally { setLoading(false); }
   };
 
   return (
@@ -199,7 +196,7 @@ function OrderForm({ API_URL }) {
           <input type="text" placeholder="ሙሉ ስም" value={order.name} onChange={(e) => setOrder({...order, name: e.target.value})} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-purple-500 font-bold" required />
           <input type="text" placeholder="የልብስ አይነት" value={order.orderType} onChange={(e) => setOrder({...order, orderType: e.target.value})} className="w-full p-4 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-purple-500 font-bold" required />
           <button type="submit" className="w-full py-4 bg-purple-600 text-white rounded-xl font-black text-lg shadow-lg hover:bg-purple-700 transition" disabled={loading}>
-            {loading ? "በመላክ ላይ..." : "ትዕዛዝ ይላኩ"}
+            {loading ? "በመላክ ላይ..." : "በትዕዛዝ ይክፈሉ"}
           </button>
         </form>
       </div>

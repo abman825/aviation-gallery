@@ -220,7 +220,7 @@ function OrderForm({ API_URL }) {
             {loading ? "በመላክ ላይ..." : "ትዕዛዝ ይላኩ"}
           </button>
         </form>
-      </div>
+      </div> 
     </section>
   );
 }

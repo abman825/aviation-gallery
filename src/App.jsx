@@ -14,7 +14,7 @@ export default function App() {
   const [imgUrl, setImgUrl] = useState("");
   const { pathname } = useLocation();
 
-  const API_URL = "https://aviation-backend-g75i.onrender.com/api"; 
+  const API_URL ="https://aviation-backend-g75i.onrender.com/api"; 
 
   useEffect(() => {
     window.scrollTo(0, 0);

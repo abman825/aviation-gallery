@@ -23,7 +23,11 @@ const OrderSchema = new mongoose.Schema({
 });
 
 const Order = mongoose.model('Order', OrderSchema);
-
+const GallerySchema = new mongoose.Schema({
+    imageUrl: String,
+    date: { type: Date, default: Date.now }
+});
+const Gallery = mongoose.model('Gallery', GallerySchema);
 // --- 4. ROUTES ---
 // --- Gallery Routes (ለአድሚን) ---
 

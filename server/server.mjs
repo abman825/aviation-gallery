@@ -14,27 +14,44 @@ mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('✅ MongoDB Connected'))
     .catch(err => console.error('❌ DB Error:', err));
 
-// --- 3. Order Model ---
+// --- 3. Models ---
+
+// Order Model
 const OrderSchema = new mongoose.Schema({
     customerName: String, 
     productName: String, 
     quantity: { type: String, default: "1" }, 
     date: { type: Date, default: Date.now }
 });
-
 const Order = mongoose.model('Order', OrderSchema);
+
+// Gallery Model
 const GallerySchema = new mongoose.Schema({
     imageUrl: String,
     date: { type: Date, default: Date.now }
 });
 const Gallery = mongoose.model('Gallery', GallerySchema);
-// --- 4. ROUTES ---
-// --- Gallery Routes (ለአድሚን) ---
 
-// 1. አዲስ ፎቶ ለመጫን
+// --- 4. ROUTES ---
+
+// --- A. Gallery Routes ---
+
+// 1. ሁሉንም የጋለሪ ፎቶዎች ለማምጣት (ይህ በጣም አስፈላጊ ነው!)
+app.get('/api/gallery', async (req, res) => {
+    try {
+        const images = await Gallery.find().sort({ date: -1 });
+        res.json(images);
+    } catch (err) {
+        res.status(500).json({ error: "ፎቶዎችን ማምጣት አልተቻለም" });
+    }
+});
+
+// 2. አዲስ ፎቶ ለመጫን
 app.post('/api/gallery', async (req, res) => {
     try {
         const { imageUrl } = req.body;
+        if (!imageUrl) return res.status(400).json({ error: "Image URL ያስፈልጋል" });
+        
         const newImage = new Gallery({ imageUrl });
         await newImage.save();
         res.status(201).json(newImage);
@@ -43,7 +60,7 @@ app.post('/api/gallery', async (req, res) => {
     }
 });
 
-// 2. ፎቶ ለመሰረዝ
+// 3. ፎቶ ለመሰረዝ
 app.delete('/api/gallery/:id', async (req, res) => {
     try {
         await Gallery.findByIdAndDelete(req.params.id);
@@ -52,7 +69,10 @@ app.delete('/api/gallery/:id', async (req, res) => {
         res.status(500).json({ error: "መሰረዝ አልተቻለም" });
     }
 });
-// ሀ. አዲስ ትዕዛዝ ለመቀበል (ከደንበኛው)
+
+// --- B. Order Routes ---
+
+// 1. አዲስ ትዕዛዝ ለመቀበል
 app.post('/api/orders', async (req, res) => {
     try {
         const { customerName, productName, quantity } = req.body;
@@ -64,7 +84,7 @@ app.post('/api/orders', async (req, res) => {
     }
 });
 
-// ለ. ሁሉንም ትዕዛዞች ለማየት (ለአድሚን ገጽ)
+// 2. ሁሉንም ትዕዛዞች ለማየት (ለአድሚን)
 app.get('/api/orders', async (req, res) => {
     try {
         const orders = await Order.find().sort({ date: -1 });
@@ -74,15 +94,16 @@ app.get('/api/orders', async (req, res) => {
     }
 });
 
-// ሐ. ትዕዛዝ ለመሰረዝ (Admin Delete)
+// 3. ትዕዛዝ ለመሰረዝ (ለአድሚን)
 app.delete('/api/orders/:id', async (req, res) => {
     try {
         await Order.findByIdAndDelete(req.params.id);
-        res.json({ success: true });
+        res.json({ success: true, message: "ትዕዛዙ ተሰርዟል" });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
+// --- 5. Server Start ---
 const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`🚀 Server on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

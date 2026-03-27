@@ -25,7 +25,29 @@ const OrderSchema = new mongoose.Schema({
 const Order = mongoose.model('Order', OrderSchema);
 
 // --- 4. ROUTES ---
+// --- Gallery Routes (ለአድሚን) ---
 
+// 1. አዲስ ፎቶ ለመጫን
+app.post('/api/gallery', async (req, res) => {
+    try {
+        const { imageUrl } = req.body;
+        const newImage = new Gallery({ imageUrl });
+        await newImage.save();
+        res.status(201).json(newImage);
+    } catch (err) {
+        res.status(500).json({ error: "ፎቶ መጫን አልተቻለም" });
+    }
+});
+
+// 2. ፎቶ ለመሰረዝ
+app.delete('/api/gallery/:id', async (req, res) => {
+    try {
+        await Gallery.findByIdAndDelete(req.params.id);
+        res.json({ success: true, message: "ፎቶ ተሰርዟል" });
+    } catch (err) {
+        res.status(500).json({ error: "መሰረዝ አልተቻለም" });
+    }
+});
 // ሀ. አዲስ ትዕዛዝ ለመቀበል (ከደንበኛው)
 app.post('/api/orders', async (req, res) => {
     try {

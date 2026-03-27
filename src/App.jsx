@@ -21,7 +21,31 @@ export default function App() {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
+// መስመር 22 አካባቢ (ከ useLocation በታች)
+const [imgUrl, setImgUrl] = useState("");
 
+const handleUploadImage = async () => {
+    if(!imgUrl) return alert("እባክህ የፎቶ ሊንክ አስገባ");
+    try {
+        const res = await fetch(`${API_URL}/gallery`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageUrl: imgUrl })
+        });
+        if(res.ok) {
+            alert("ፎቶ ተጭኗል!");
+            setImgUrl("");
+            fetchImages(); 
+        }
+    } catch (err) { alert("መጫን አልተቻለም"); }
+};
+
+const deleteImage = async (id) => {
+    if(window.confirm("ይህ ፎቶ ከጋለሪ እንዲጠፋ ትፈልጋለህ?")) {
+        await fetch(`${API_URL}/gallery/${id}`, { method: 'DELETE' });
+        fetchImages();
+    }
+};
   // አድሚን ገጽ ለመክፈት
   const fetchOrders = async () => {
     const password = prompt("የአድሚን ፓስወርድ ያስገቡ:");
@@ -62,6 +86,33 @@ export default function App() {
           <Link to="/order" className={pathname === "/order" ? "text-purple-600" : ""}>Order</Link>
           <button onClick={fetchOrders} className="p-2 hover:bg-gray-100 rounded-full transition text-lg">⚙️</button>
         </div>
+      <div className="mt-12 border-t pt-8">
+                <h3 className="text-xl font-bold mb-4">Manage Gallery</h3>
+                <div className="flex gap-2 mb-6">
+                    <input 
+                        type="text" 
+                        placeholder="Image URL Here..." 
+                        value={imgUrl}
+                        onChange={(e) => setImgUrl(e.target.value)}
+                        className="flex-1 p-3 border rounded-xl outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    <button onClick={handleUploadImage} className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold">Upload</button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                    {dbImages.map((img) => (
+                        <div key={img._id} className="relative group">
+                            <img src={img.imageUrl} className="w-full h-32 object-cover rounded-lg" />
+                            <button 
+                                onClick={() => deleteImage(img._id)}
+                                className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                            >
+                                &times;
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </div>
       </nav>
 
       {/* Admin Dashboard Modal */}

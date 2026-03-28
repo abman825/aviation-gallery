@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 
 // 1. ቁልፉን እዚህ ጋር በቀጥታ አስገብተነዋል (ለሙከራ ብቻ)
-const CHAPA_SECRET_KEY = 'CHASECK_TEST-6v67vS0X9u1vB14841N43054f150n07S'; 
+const CHAPA_SECRET_KEY = process.env.CHAPA_SECRET_KEY;
 
 // --- Multer Setup ---
 const uploadDir = 'uploads';
@@ -48,7 +48,7 @@ app.post('/api/pay', async (req, res) => {
             {
                 amount: amount.toString(), // መጠን የግድ String መሆን አለበት
                 currency: 'ETB',
-                email: 'test@lilmoo.com', // ለማንኛውም ደንበኛ የሚሰራ የሙከራ ኢሜይል
+                email: 'test@gmail.com', // ለማንኛውም ደንበኛ የሚሰራ የሙከራ ኢሜይል
                 first_name: customerName,
                 tx_ref: tx_ref,
                 callback_url: "https://aviation-backend-g75i.onrender.com/api/verify-payment",

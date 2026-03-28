@@ -73,7 +73,7 @@ app.post('/api/pay', async (req, res) => {
                 last_name: "Customer",
                 tx_ref: tx_ref,
                 callback_url: "https://aviation-backend-g75i.onrender.com/api/verify-payment",
-                return_url: "https://lilmoo-design.vercel.app/success",
+                return_url: "https://aviation-gallery.vercel.app//success",
                 "customization[title]": "Lilmoo Design Payment",
                 "customization[description]": `Payment for ${productName || 'Order'}`
             },

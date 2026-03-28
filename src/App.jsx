@@ -12,7 +12,6 @@ export default function App() {
   const [dbImages, setDbImages] = useState([]); 
   const [selectedFile, setSelectedFile] = useState(null); 
   const { pathname } = useLocation();
-
   // ዋናው የባክኢንድ አድራሻ
   const API_URL = "https://aviation-backend-g75i.onrender.com/api"; 
 

@@ -19,7 +19,6 @@ export default function App() {
     window.scrollTo(0, 0);
     fetchImages();
   }, [pathname]);
-
   const fetchImages = async () => {
     try {
       const res = await fetch(`${API_URL}/gallery`);

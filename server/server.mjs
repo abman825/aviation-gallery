@@ -56,7 +56,7 @@ const Order = mongoose.model('Order', new mongoose.Schema({
 
 // --- 4. Routes ---
 
-// Gallery Upload
+// A. Gallery Upload
 app.post('/api/gallery', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: "ፋይል አልተመረጠም!" });
@@ -79,7 +79,7 @@ app.get('/api/gallery', async (req, res) => {
   }
 });
 
-// Payment Route (Chapa Only)
+// B. Payment Route (Initialize)
 app.post('/api/pay', async (req, res) => {
   const { customerName, productName, amount } = req.body;
   const tx_ref = `tx-${Date.now()}`;
@@ -93,6 +93,7 @@ app.post('/api/pay', async (req, res) => {
       last_name: productName,
       tx_ref,
       callback_url: "https://aviation-backend-g75i.onrender.com/api/verify",
+      // ተጠቃሚው ከከፈለ በኋላ ሰርቨርህ ላይ ወዳለው የsuccess ገጽ እንዲመጣ እናደርጋለን
       return_url: "https://aviation-backend-g75i.onrender.com/api/success" 
     }, {
       headers: { Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}` }
@@ -106,9 +107,30 @@ app.post('/api/pay', async (req, res) => {
   }
 });
 
+// C. Success Page Route (ተጠቃሚው ከክፍያ በኋላ የሚያየው)
+app.get('/api/success', (req, res) => {
+  res.send(`
+    <div style="text-align: center; margin-top: 50px; font-family: sans-serif;">
+      <h1 style="color: green;">✅ ክፍያዎ ተሳክቷል!</h1>
+      <p>ስለገዙ እናመሰግናለን።</p>
+      <a href="https://aviation-gallery.vercel.app/gallery" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px;">ወደ ድህረ ገጽ ተመለስ</a>
+    </div>
+  `);
+});
+
+// D. Chapa Callback Route (ክፍያው መጠናቀቁን Chapa ለሰርቨርህ የሚያሳውቅበት)
+app.post('/api/verify', async (req, res) => {
+  try {
+    console.log("Payment Callback Received:", req.body);
+    // እዚህ ጋር የትዕዛዙን ሁኔታ (Status) ዳታቤዝ ላይ 'completed' ማድረግ ትችላለህ
+    res.status(200).send("OK");
+  } catch (err) {
+    res.status(500).send("Callback Error");
+  }
+});
+
 // --- 5. Server & Database Connection ---
 const PORT = process.env.PORT || 10000;
-// ያንተ .env ላይ ያለው ስም MONGODB_URI ስለሆነ እዚህም መቀየር አለበት
 const DB_URL = process.env.MONGODB_URI; 
 
 if (!DB_URL) {

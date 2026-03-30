@@ -7,7 +7,6 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import axios from 'axios';
 import dotenv from 'dotenv';
 
-// .env ፋይልን ለማንበብ
 dotenv.config();
 
 const app = express();
@@ -24,7 +23,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// --- 2. Multer & Cloudinary Storage ---
+// --- 2. Storage Setup ---
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
@@ -40,38 +39,34 @@ const upload = multer({
 });
 
 // --- 3. Database Schemas ---
-const GallerySchema = new mongoose.Schema({
+const Gallery = mongoose.model('Gallery', new mongoose.Schema({
   imageUrl: { type: String, required: true },
   publicId: { type: String, required: true },
   createdAt: { type: Date, default: Date.now }
-});
-const Gallery = mongoose.model('Gallery', GallerySchema);
+}));
 
-const OrderSchema = new mongoose.Schema({
+const Order = mongoose.model('Order', new mongoose.Schema({
   customerName: String,
   productName: String,
   amount: Number,
   status: { type: String, default: 'pending' },
   tx_ref: { type: String, unique: true },
   createdAt: { type: Date, default: Date.now }
-});
-const Order = mongoose.model('Order', OrderSchema);
+}));
 
-// --- 4. Gallery Routes ---
+// --- 4. Routes ---
 
+// Gallery Upload
 app.post('/api/gallery', upload.single('image'), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ message: "እባክዎ ፋይል ይምረጡ!" });
-    
-    const newMedia = new Gallery({
+    if (!req.file) return res.status(400).json({ message: "ፋይል አልተመረጠም!" });
+    const newMedia = await Gallery.create({
       imageUrl: req.file.path,
       publicId: req.file.filename
     });
-    
-    await newMedia.save();
     res.status(201).json(newMedia);
   } catch (err) {
-    res.status(500).json({ message: "Upload Error", error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -84,33 +79,13 @@ app.get('/api/gallery', async (req, res) => {
   }
 });
 
-app.delete('/api/gallery/:id', async (req, res) => {
-  try {
-    const item = await Gallery.findById(req.params.id);
-    if (!item) return res.status(404).json({ message: "ፋይሉ አልተገኘም" });
-
-    if (item.publicId) {
-      const isVideo = item.imageUrl.match(/\.(mp4|mov|webm)$/i);
-      await cloudinary.uploader.destroy(item.publicId, { 
-        resource_type: isVideo ? 'video' : 'image' 
-      });
-    }
-
-    await Gallery.findByIdAndDelete(req.params.id);
-    res.json({ message: "ተሰርዟል" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// --- 5. Payment & Telegram Routes ---
-
+// Payment Route (Chapa Only)
 app.post('/api/pay', async (req, res) => {
   const { customerName, productName, amount } = req.body;
   const tx_ref = `tx-${Date.now()}`;
 
   try {
-    const chapaResponse = await axios.post('https://api.chapa.co/v1/transaction/initialize', {
+    const response = await axios.post('https://api.chapa.co/v1/transaction/initialize', {
       amount,
       currency: 'ETB',
       email: 'customer@gmail.com',
@@ -123,27 +98,27 @@ app.post('/api/pay', async (req, res) => {
       headers: { Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}` }
     });
 
-    const newOrder = new Order({ customerName, productName, amount, tx_ref });
-    await newOrder.save();
-
-    const msg = `🔔 **አዲስ ትዕዛዝ!**\n👤 ስም: ${customerName}\n👗 አይነት: ${productName}\n💰 ዋጋ: ${amount} ETB`;
-    await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-      chat_id: process.env.TELEGRAM_CHAT_ID,
-      text: msg,
-      parse_mode: 'Markdown'
-    });
-
-    res.json(chapaResponse.data.data);
+    await Order.create({ customerName, productName, amount, tx_ref });
+    res.json(response.data.data);
   } catch (err) {
-    res.status(500).json({ error: "የክፍያ ሂደት መጀመር አልተቻለም" });
+    console.error("Chapa Error:", err.response?.data || err.message);
+    res.status(500).json({ error: "የክፍያ ስህተት ተከስቷል" });
   }
 });
 
-// --- 6. Server Start ---
-const PORT = process.env.PORT || 5000;
+// --- 5. Server & Database Connection ---
+const PORT = process.env.PORT || 10000;
+// ያንተ .env ላይ ያለው ስም MONGODB_URI ስለሆነ እዚህም መቀየር አለበት
+const DB_URL = process.env.MONGODB_URI; 
 
-mongoose.connect(process.env.MONGO_URI)
+if (!DB_URL) {
+    console.error("❌ MONGODB_URI is missing in .env file");
+    process.exit(1);
+}
+
+mongoose.connect(DB_URL)
   .then(() => {
+    console.log("✅ MongoDB Connected Successfully!");
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   })
-  .catch(err => console.error("❌ DB Error:", err));
+  .catch(err => console.error("❌ DB Connection Error:", err));

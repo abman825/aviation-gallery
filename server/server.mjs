@@ -93,7 +93,7 @@ app.post('/api/pay', async (req, res) => {
       last_name: productName,
       tx_ref,
       callback_url: "https://aviation-backend-g75i.onrender.com/api/verify",
-      return_url: "http://localhost:5173/success" 
+      return_url: "https://aviation-backend-g75i.onrender.com/api/verify" 
     }, {
       headers: { Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}` }
     });

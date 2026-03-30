@@ -1,152 +1,147 @@
-import 'dotenv/config'; 
-import express from 'express';
-import mongoose from 'mongoose';
-import cors from 'cors';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import axios from 'axios';
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const multer = require('multer');
+const { v2: cloudinary } = require('cloudinary');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const axios = require('axios'); // ለ Chapa እና Telegram
+require('dotenv').config();
 
 const app = express();
 
-// --- Middleware ---
+// 1. ፋይል ሳይዝ ሊሚቱን መጨመር (ለቪዲዮዎች)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cors());
-app.use(express.json());
 
-// --- Database Connection ---
-// .env ላይ ያለውን MONGODB_URI ይጠቀማል
-mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('✅ MongoDB Connected Successfully'))
-    .catch(err => console.error('❌ MongoDB Connection Error:', err));
-
-// --- Models ---
-const Order = mongoose.model('Order', new mongoose.Schema({
-    customerName: String,
-    productName: String,
-    amount: String,
-    tx_ref: String,
-    status: { type: String, default: 'pending' },
-    date: { type: Date, default: Date.now }
-}));
-
-const Gallery = mongoose.model('Gallery', new mongoose.Schema({
-    imageUrl: String,
-    date: { type: Date, default: Date.now }
-}));
-
-// --- Multer Setup (ፎቶ ለመጫን) ---
-const uploadDir = 'uploads';
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => { cb(null, 'uploads/'); },
-    filename: (req, file, cb) => { cb(null, Date.now() + path.extname(file.originalname)); }
-});
-const upload = multer({ storage: storage });
-app.use('/uploads', express.static('uploads'));
-
-// --- ROUTES ---
-
-// 1. Chapa Payment & Order Placement (ዋናው ክፍል)
-app.post('/api/pay', async (req, res) => {
-    const { amount, customerName, productName } = req.body;
-    
-    // ለ Chapa የሚላክ ልዩ መለያ (Transaction Reference)
-    const tx_ref = `lilmoo-${Date.now()}`;
-
-    try {
-        // .env ላይ ያለውን ቁልፍ ሲያነብ Space ካለ እንዲያጠፋ .trim() እንጠቀማለን
-        const secretKey = process.env.CHAPA_SECRET_KEY ? process.env.CHAPA_SECRET_KEY.trim() : null;
-
-        if (!secretKey) {
-            throw new Error("CHAPA_SECRET_KEY is missing in Environment Variables");
-        }
-
-        const response = await axios.post(
-            'https://api.chapa.co/v1/transaction/initialize',
-            {
-                amount: amount ? amount.toString() : "100",
-                currency: 'ETB',
-                email: 'customer@lilmoo.com', // የግድ መኖር አለበት
-                first_name: customerName || "Guest",
-                last_name: "Customer",
-                tx_ref: tx_ref,
-                callback_url: "https://aviation-backend-g75i.onrender.com/api/verify-payment",
-                return_url: "https://aviation-gallery.vercel.app//success",
-                "customization[title]": "Lilmoo Design Payment",
-                "customization[description]": `Payment for ${productName || 'Order'}`
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${secretKey}`,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-
-        // ቻፓ በተሳካ ሁኔታ ሊንኩን ከፈጠረ
-        if (response.data.status === 'success') {
-            // ትዕዛዙን ዳታቤዝ ላይ መመዝገብ
-            const newOrder = new Order({ customerName, productName, amount, tx_ref });
-            await newOrder.save();
-            
-            // ለ Frontend የቻፓን መክፈያ ሊንክ መላክ
-            res.json({ checkout_url: response.data.data.checkout_url });
-        } else {
-            res.status(400).json({ error: "Chapa initialization failed" });
-        }
-
-    } catch (err) {
-        // ስህተቱ ምን እንደሆነ በ Render Logs ላይ እንዲታይ
-        console.error("❌ CHAPA ERROR DETAILS:", err.response?.data || err.message);
-        
-        res.status(500).json({ 
-            error: "ክፍያ ማስጀመር አልተቻለም", 
-            message: err.response?.data?.message || err.message 
-        });
-    }
+// Cloudinary Config
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// 2. ጋለሪ Routes
-app.get('/api/gallery', async (req, res) => {
-    try {
-        const images = await Gallery.find().sort({ date: -1 });
-        res.json(images);
-    } catch (err) { res.status(500).json([]); }
+// 2. Storage ማስተካከያ (ለፎቶ እና ለቪዲዮ)
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'lilmoo-gallery',
+    resource_type: 'auto', // ቪዲዮ እና ፎቶ እንዲቀበል
+    allowed_formats: ['jpg', 'png', 'jpeg', 'mp4', 'mov', 'webm']
+  },
 });
 
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB Max
+});
+
+// --- Database Schemas ---
+const GallerySchema = new mongoose.Schema({
+  imageUrl: String,
+  publicId: String,
+  createdAt: { type: Date, default: Date.now }
+});
+const Gallery = mongoose.model('Gallery', GallerySchema);
+
+const OrderSchema = new mongoose.Schema({
+  customerName: String,
+  productName: String,
+  amount: String,
+  status: { type: String, default: 'pending' },
+  tx_ref: String,
+  createdAt: { type: Date, default: Date.now }
+});
+const Order = mongoose.model('Order', OrderSchema);
+
+// --- 1. Gallery Routes (ፎቶ/ቪዲዮ) ---
 app.post('/api/gallery', upload.single('image'), async (req, res) => {
-    try {
-        const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-        const newImage = new Gallery({ imageUrl });
-        await newImage.save();
-        res.status(201).json(newImage);
-    } catch (err) { res.status(500).json({ error: "Upload failed" }); }
+  try {
+    if (!req.file) return res.status(400).json({ message: "ፋይል አልተመረጠም" });
+    const newMedia = new Gallery({
+      imageUrl: req.file.path,
+      publicId: req.file.filename
+    });
+    await newMedia.save();
+    res.status(201).json(newMedia);
+  } catch (err) {
+    res.status(500).json({ message: "Upload Error" });
+  }
+});
+
+app.get('/api/gallery', async (req, res) => {
+  try {
+    const items = await Gallery.find().sort({ createdAt: -1 });
+    res.json(items);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
 app.delete('/api/gallery/:id', async (req, res) => {
-    try {
-        await Gallery.findByIdAndDelete(req.params.id);
-        res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: "Delete failed" }); }
+  try {
+    const item = await Gallery.findById(req.params.id);
+    if(item && item.publicId) {
+        // ቪዲዮ ከሆነ 'video' ብሎ ማጥፋት አለበት
+        const isVid = item.imageUrl.match(/\.(mp4|mov|webm)$/i);
+        await cloudinary.uploader.destroy(item.publicId, { resource_type: isVid ? 'video' : 'image' });
+    }
+    await Gallery.findByIdAndDelete(req.params.id);
+    res.json({ message: "Deleted" });
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
-// 3. ትዕዛዞችን ማስተዳደር
+// --- 2. Order & Chapa Routes (ያልተቀነሰ) ---
+app.post('/api/pay', async (req, res) => {
+  const { customerName, productName, amount } = req.body;
+  const tx_ref = `tx-${Date.now()}`;
+
+  try {
+    const response = await axios.post('https://api.chapa.co/v1/transaction/initialize', {
+      amount, currency: 'ETB', email: 'customer@gmail.com',
+      first_name: customerName, last_name: productName,
+      tx_ref, callback_url: "https://aviation-backend-g75i.onrender.com/api/verify",
+      return_url: "http://localhost:5173/success" // ወይም ያንተ ዶሜን
+    }, {
+      headers: { Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}` }
+    });
+
+    // ትዕዛዙን ዳታቤዝ ውስጥ ማስቀመጥ
+    const newOrder = new Order({ customerName, productName, amount, tx_ref });
+    await newOrder.save();
+
+    // Telegram Bot ማሳወቂያ
+    const msg = `🔔 አዲስ ትዕዛዝ!\n👤 ስም: ${customerName}\n👗 አይነት: ${productName}\n💰 ዋጋ: ${amount} ETB`;
+    await axios.post(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      chat_id: process.env.TELEGRAM_CHAT_ID, text: msg
+    });
+
+    res.json(response.data.data);
+  } catch (err) {
+    res.status(500).json({ error: "Payment Initialization Failed" });
+  }
+});
+
 app.get('/api/orders', async (req, res) => {
-    try {
-        const orders = await Order.find().sort({ date: -1 });
-        res.json(orders);
-    } catch (err) { res.status(500).json([]); }
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 });
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
 app.delete('/api/orders/:id', async (req, res) => {
     try {
         await Order.findByIdAndDelete(req.params.id);
-        res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: "Delete failed" }); }
+        res.json({ message: "Order Deleted" });
+    } catch (err) { res.status(500).json(err); }
 });
 
 // --- Server Start ---
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+const PORT = process.env.PORT || 5000;
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => app.listen(PORT, () => console.log(`Server running on port ${PORT}`)))
+  .catch(err => console.error("DB Connection Error:", err));

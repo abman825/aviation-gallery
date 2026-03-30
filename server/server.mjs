@@ -107,17 +107,96 @@ app.post('/api/pay', async (req, res) => {
   }
 });
 
-// C. Success Page Route (ተጠቃሚው ከክፍያ በኋላ የሚያየው)
+// C. SUCCESS ROUTE (በሚያምር ዲዛይን)
 app.get('/api/success', (req, res) => {
   res.send(`
-    <div style="text-align: center; margin-top: 50px; font-family: sans-serif;">
-      <h1 style="color: green;">✅ ክፍያዎ ተሳክቷል!</h1>
-      <p>ስለገዙ እናመሰግናለን።</p>
-      <a href="https://aviation-gallery.vercel.app/gallery" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-top: 20px;">ወደ ድህረ ገጽ ተመለስ</a>
-    </div>
+    <!DOCTYPE html>
+    <html lang="am">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ክፍያ ተሳክቷል</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #f4f7f6;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+            .card {
+                background: white;
+                padding: 40px;
+                border-radius: 20px;
+                box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+                text-align: center;
+                max-width: 400px;
+                width: 90%;
+                animation: slideUp 0.5s ease-out;
+            }
+            @keyframes slideUp {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .icon-circle {
+                width: 80px;
+                height: 80px;
+                background-color: #28a745;
+                border-radius: 50%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin: 0 auto 20px;
+                box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            }
+            .checkmark {
+                color: white;
+                font-size: 50px;
+                font-weight: bold;
+            }
+            h1 {
+                color: #2c3e50;
+                margin-bottom: 10px;
+                font-size: 24px;
+            }
+            p {
+                color: #7f8c8d;
+                line-height: 1.6;
+                margin-bottom: 30px;
+            }
+            .btn {
+                background: linear-gradient(135deg, #007bff, #0056b3);
+                color: white;
+                padding: 14px 28px;
+                text-decoration: none;
+                border-radius: 30px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                display: inline-block;
+                box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+            }
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+                background: linear-gradient(135deg, #0056b3, #004085);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <div class="icon-circle">
+                <span class="checkmark">✓</span>
+            </div>
+            <h1>ክፍያዎ ተሳክቷል!</h1>
+            <p>ስለገዙ እናመሰግናለን። ትዕዛዝዎ በስኬት ተመዝግቧል። ማንኛውንም ጥያቄ ካሎት እባክዎ ያነጋግሩን።</p>
+            <a href="https://aviation-gallery.vercel.app/gallery" class="btn">ወደ ድህረ ገጽ ተመለስ</a>
+        </div>
+    </body>
+    </html>
   `);
 });
-
 // D. Chapa Callback Route (ክፍያው መጠናቀቁን Chapa ለሰርቨርህ የሚያሳውቅበት)
 app.post('/api/verify', async (req, res) => {
   try {

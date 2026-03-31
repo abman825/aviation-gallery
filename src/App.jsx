@@ -9,9 +9,9 @@ import img3 from './assets/3.jpg'; import vid3 from './assets/3.mp4';
 import img4 from './assets/4.jpg'; import vid4 from './assets/4.mp4';
 import img5 from './assets/5.jpg'; import vid5 from './assets/5.mp4';
 import img6 from './assets/6.jpg'; import vid6 from './assets/6.mp4';
-import img7 from './assets/7.jpg'; import vid7 from './assets/7.mp4';
-import img8 from './assets/8.jpg'; import vid8 from './assets/8.mp4';
-import img9 from './assets/9.jpg'; import img10 from './assets/10.jpg';
+import imge from './assets/e.jpg'; import vid7 from './assets/7.mp4';
+import imgi from './assets/i.jpg'; import vid8 from './assets/8.mp4';
+import img11 from './assets/11.jpg'; import img10 from './assets/10.jpg';
 
 import bgImage from './assets/1.jpg'; 
 
@@ -25,7 +25,7 @@ export default function App() {
   const API_URL = "https://aviation-backend-g75i.onrender.com/api"; 
 
   const staticVideos = [vid1, vid2, vid3, vid4, vid5, vid6, vid7, vid8];
-  const staticPhotos = [img1, img2, img3, img4, img5, img6, img7, img8, img9, img10];
+  const staticPhotos = [img1, img2, img3, img4, img5, img6, imge, imgi, img11, img10];
 
   useEffect(() => {
     window.scrollTo(0, 0);

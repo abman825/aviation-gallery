@@ -53,13 +53,13 @@ export default function App() {
   };
 
   const handleUploadImage = async () => {
-    if(!selectedFile) return alert("እባክህ መጀመሪያ ፎቶ ምረጥ");
+    if(!selectedFile) return alert("እባክህ መጀመሪያ ፋይል ምረጥ");
     const formData = new FormData();
     formData.append('image', selectedFile);
     try {
         const res = await fetch(`${API_URL}/gallery`, { method: 'POST', body: formData });
         if(res.ok) {
-            alert("ፎቶው ተጭኗል!");
+            alert("ፋይሉ ተጭኗል!");
             setSelectedFile(null);
             fetchImages(); 
         }
@@ -67,7 +67,7 @@ export default function App() {
   };
 
   const deleteImage = async (id) => {
-    if(window.confirm("ይህ ፎቶ እንዲጠፋ ትፈልጋለህ?")) {
+    if(window.confirm("ይህንን ፋይል እንዲጠፋ ትፈልጋለህ?")) {
         await fetch(`${API_URL}/gallery/${id}`, { method: 'DELETE' });
         fetchImages();
     }
@@ -80,16 +80,17 @@ export default function App() {
     }
   };
 
+  // ፋይሉ ቪዲዮ መሆኑን መለያ Function
+  const isVideo = (url) => url.match(/\.(mp4|webm|ogg|mov)$/i);
+
   return (
     <div className="relative min-h-screen font-sans text-white selection:bg-purple-500/30 overflow-x-hidden">
       
-      {/* Background Section */}
       <div className="fixed inset-0 z-0">
         <img src={bgImage} className="w-full h-full object-cover" alt="Background" />
         <div className="absolute inset-0 bg-black/60 backdrop-blur-[3px]"></div>
       </div>
 
-      {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 bg-white/10 backdrop-blur-2xl border-b border-white/10 px-6 py-4 flex justify-between items-center shadow-xl">
         <Link to="/" className="text-2xl md:text-3xl font-black italic hover:scale-105 transition-all tracking-tighter text-white">lilmoo</Link>
         <div className="flex items-center gap-4 md:gap-8 font-bold text-[9px] md:text-[10px] uppercase tracking-[0.2em] md:tracking-[0.25em]">
@@ -100,7 +101,6 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Admin Dashboard Modal */}
       {showAdmin && (
         <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 backdrop-blur-md" onClick={() => setShowAdmin(false)}>
           <div className="bg-gray-900/40 backdrop-blur-3xl rounded-[40px] w-full max-w-4xl max-h-[85vh] overflow-y-auto p-10 shadow-2xl border border-white/10 text-white" onClick={e => e.stopPropagation()}>
@@ -109,7 +109,7 @@ export default function App() {
                <button onClick={() => setShowAdmin(false)} className="w-10 h-10 flex items-center justify-center bg-white/10 rounded-full text-2xl hover:bg-red-500 transition-all">&times;</button>
             </div>
             
-            <div className="overflow-x-auto mb-10 rounded-2xl bg-black/20 p-4 border border-white/5">
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
               <table className="w-full text-left">
                 <thead>
                   <tr className="text-[10px] uppercase text-purple-300 font-black border-b border-white/10">
@@ -133,13 +133,18 @@ export default function App() {
             <div className="mt-8 pt-10 border-t border-white/10">
                 <h3 className="text-xl font-black mb-6 text-purple-300 italic">Gallery Management</h3>
                 <div className="flex gap-4 mb-8">
-                    <input type="file" onChange={(e) => setSelectedFile(e.target.files[0])} className="flex-1 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-purple-600 file:text-white p-2 border border-dashed border-white/20 rounded-2xl bg-white/5" />
+                    {/* accept="image/*,video/*" ተጨምሯል */}
+                    <input type="file" accept="image/*,video/*" onChange={(e) => setSelectedFile(e.target.files[0])} className="flex-1 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-purple-600 file:text-white p-2 border border-dashed border-white/20 rounded-2xl bg-white/5" />
                     <button onClick={handleUploadImage} className="bg-purple-600 text-white px-8 py-2 rounded-2xl font-black hover:bg-purple-700 transition-all">Upload</button>
                 </div>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-8">
                     {dbImages.map((img) => (
-                        <div key={img._id} className="relative group aspect-square rounded-xl overflow-hidden border border-white/10">
-                            <img src={img.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-125" />
+                        <div key={img._id} className="relative group aspect-square rounded-xl overflow-hidden border border-white/10 bg-black/40">
+                            {isVideo(img.imageUrl) ? (
+                                <video src={img.imageUrl} className="w-full h-full object-cover" muted />
+                            ) : (
+                                <img src={img.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-125" />
+                            )}
                             <button onClick={() => deleteImage(img._id)} className="absolute inset-0 bg-red-600/50 opacity-0 group-hover:opacity-100 flex items-center justify-center font-black transition-all text-2xl">×</button>
                         </div>
                     ))}
@@ -167,9 +172,10 @@ export default function App() {
               {/* --- Photos First --- */}
               <div className="animate-fade-in-up">
                   <h2 className="text-3xl md:text-5xl font-black italic text-white tracking-tighter mb-8 pl-4 border-l-8 border-purple-500 uppercase">Photos</h2>
-                  <div className="grid grid-cols-4 gap-2 md:gap-8">
-                    {dbImages.map((img, i) => (
-                      <div key={`db-${i}`} className="aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 group">
+                 <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-8 px-1">
+                    {/* ዳታቤዝ ውስጥ ያሉ ፎቶዎች */}
+                    {dbImages.filter(item => !isVideo(item.imageUrl)).map((img, i) => (
+                      <div key={`db-p-${i}`} className="aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 group">
                          <img src={img.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                       </div>
                     ))}
@@ -181,31 +187,24 @@ export default function App() {
                   </div>
               </div>
 
-    {/* --- Videos Section --- */}
-<div className="animate-fade-in-up">
-    <h2 className="text-3xl md:text-5xl font-black italic text-white tracking-tighter mb-8 pl-4 border-l-8 border-purple-500 uppercase">Videos</h2>
-    
-    {/* በስልክ ላይ ቪዲዮዎቹ ትንሽ እንዲሰፉ gap-2 እና p-1 ተጨምሯል */}
-    <div className="grid grid-cols-4 gap-2 md:gap-8 px-1">
-      {staticVideos.map((vid, i) => (
-        <div key={`st-v-${i}`} className="relative aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 bg-black/60 group">
-           
-           <video 
-             src={vid} 
-             className="w-full h-full object-cover"
-             controls
-             playsInline
-             webkit-playsinline="true" // ለ iPhone (iOS) ብሮውዘሮች
-             preload="metadata"
-             style={{ objectFit: 'cover' }} // ቪዲዮው ሙሉ ቦታውን እንዲይዝ
-           >
-             የእርስዎ ብሮውዘር ቪዲዮውን ሊያጫውት አልቻለም።
-           </video>
-
-        </div>
-      ))}
-    </div>
-</div>
+              {/* --- Videos Section --- */}
+              <div className="animate-fade-in-up">
+                  <h2 className="text-3xl md:text-5xl font-black italic text-white tracking-tighter mb-8 pl-4 border-l-8 border-purple-500 uppercase">Videos</h2>
+                  <div className="grid grid-cols-4 gap-2 md:gap-8 px-1">
+                    {/* ዳታቤዝ ውስጥ ያሉ ቪዲዮዎች */}
+                    {dbImages.filter(item => isVideo(item.imageUrl)).map((vid, i) => (
+                      <div key={`db-v-${i}`} className="relative aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 bg-black/60 group">
+                         <video src={vid.imageUrl} className="w-full h-full object-cover" controls playsInline webkit-playsinline="true" preload="metadata" style={{ objectFit: 'cover' }} />
+                      </div>
+                    ))}
+                    {/* Static Videos */}
+                    {staticVideos.map((vid, i) => (
+                      <div key={`st-v-${i}`} className="relative aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 bg-black/60 group">
+                         <video src={vid} className="w-full h-full object-cover" controls playsInline webkit-playsinline="true" preload="metadata" style={{ objectFit: 'cover' }} />
+                      </div>
+                    ))}
+                  </div>
+              </div>
             </section>
           } />
 
@@ -273,4 +272,4 @@ function OrderForm({ API_URL }) {
       </div>
     </section>
   );
-} 
+}

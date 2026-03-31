@@ -82,6 +82,18 @@ export default function App() {
 
   const isVideo = (url) => url.match(/\.(mp4|webm|ogg|mov)$/i);
 
+  // ቪዲዮ ሲጫወት Fullscreen እንዲሆን የሚያደርግ function
+  const handleVideoPlay = (e) => {
+    const video = e.target;
+    if (video.requestFullscreen) {
+      video.requestFullscreen();
+    } else if (video.webkitEnterFullscreen) {
+      video.webkitEnterFullscreen(); // ለ iPhone/Safari
+    } else if (video.msRequestFullscreen) {
+      video.msRequestFullscreen();
+    }
+  };
+
   return (
     <div className="relative min-h-screen font-sans text-white selection:bg-purple-500/30 overflow-x-hidden">
       
@@ -135,7 +147,6 @@ export default function App() {
                     <input type="file" accept="image/*,video/*" onChange={(e) => setSelectedFile(e.target.files[0])} className="flex-1 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-purple-600 file:text-white p-2 border border-dashed border-white/20 rounded-2xl bg-white/5" />
                     <button onClick={handleUploadImage} className="bg-purple-600 text-white px-8 py-2 rounded-2xl font-black hover:bg-purple-700 transition-all">Upload</button>
                 </div>
-                {/* Admin Gallery - በስልክ 3 እንዲሆን grid-cols-3 ተጨምሯል */}
                 <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
                     {dbImages.map((img) => (
                         <div key={img._id} className="relative group aspect-square rounded-xl overflow-hidden border border-white/10 bg-black/40">
@@ -168,7 +179,7 @@ export default function App() {
 
           <Route path="/gallery" element={
             <section className="py-12 px-4 max-w-7xl mx-auto space-y-20">
-              {/* --- Photos --- */}
+              {/* --- Photos (Mobile 3, Desktop 4) --- */}
               <div className="animate-fade-in-up">
                   <h2 className="text-3xl md:text-5xl font-black italic text-white tracking-tighter mb-8 pl-4 border-l-8 border-purple-500 uppercase">Photos</h2>
                  <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-8 px-1">
@@ -185,18 +196,34 @@ export default function App() {
                   </div>
               </div>
 
-              {/* --- Videos - አሁን በስልክ 3 እንዲሆን grid-cols-3 ተስተካክሏል --- */}
+              {/* --- Videos (Mobile 3, Desktop 4) + Auto Fullscreen on Play --- */}
               <div className="animate-fade-in-up">
                   <h2 className="text-3xl md:text-5xl font-black italic text-white tracking-tighter mb-8 pl-4 border-l-8 border-purple-500 uppercase">Videos</h2>
                   <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-8 px-1">
                     {dbImages.filter(item => isVideo(item.imageUrl)).map((vid, i) => (
                       <div key={`db-v-${i}`} className="relative aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 bg-black/60 group">
-                         <video src={vid.imageUrl} className="w-full h-full object-cover" controls playsInline webkit-playsinline="true" preload="metadata" style={{ objectFit: 'cover' }} />
+                         <video 
+                           src={vid.imageUrl} 
+                           className="w-full h-full object-cover" 
+                           controls 
+                           playsInline 
+                           onPlay={handleVideoPlay}
+                           preload="metadata" 
+                           style={{ objectFit: 'cover' }} 
+                         />
                       </div>
                     ))}
                     {staticVideos.map((vid, i) => (
                       <div key={`st-v-${i}`} className="relative aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 bg-black/60 group">
-                         <video src={vid} className="w-full h-full object-cover" controls playsInline webkit-playsinline="true" preload="metadata" style={{ objectFit: 'cover' }} />
+                         <video 
+                           src={vid} 
+                           className="w-full h-full object-cover" 
+                           controls 
+                           playsInline 
+                           onPlay={handleVideoPlay}
+                           preload="metadata" 
+                           style={{ objectFit: 'cover' }} 
+                         />
                       </div>
                     ))}
                   </div>

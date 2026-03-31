@@ -80,7 +80,6 @@ export default function App() {
     }
   };
 
-  // ፋይሉ ቪዲዮ መሆኑን መለያ Function
   const isVideo = (url) => url.match(/\.(mp4|webm|ogg|mov)$/i);
 
   return (
@@ -109,7 +108,7 @@ export default function App() {
                <button onClick={() => setShowAdmin(false)} className="w-10 h-10 flex items-center justify-center bg-white/10 rounded-full text-2xl hover:bg-red-500 transition-all">&times;</button>
             </div>
             
-            <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+            <div className="overflow-x-auto mb-10 rounded-2xl bg-black/20 p-4 border border-white/5">
               <table className="w-full text-left">
                 <thead>
                   <tr className="text-[10px] uppercase text-purple-300 font-black border-b border-white/10">
@@ -133,11 +132,11 @@ export default function App() {
             <div className="mt-8 pt-10 border-t border-white/10">
                 <h3 className="text-xl font-black mb-6 text-purple-300 italic">Gallery Management</h3>
                 <div className="flex gap-4 mb-8">
-                    {/* accept="image/*,video/*" ተጨምሯል */}
                     <input type="file" accept="image/*,video/*" onChange={(e) => setSelectedFile(e.target.files[0])} className="flex-1 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-purple-600 file:text-white p-2 border border-dashed border-white/20 rounded-2xl bg-white/5" />
                     <button onClick={handleUploadImage} className="bg-purple-600 text-white px-8 py-2 rounded-2xl font-black hover:bg-purple-700 transition-all">Upload</button>
                 </div>
-                <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-8">
+                {/* Admin Gallery - በስልክ 3 እንዲሆን grid-cols-3 ተጨምሯል */}
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
                     {dbImages.map((img) => (
                         <div key={img._id} className="relative group aspect-square rounded-xl overflow-hidden border border-white/10 bg-black/40">
                             {isVideo(img.imageUrl) ? (
@@ -169,11 +168,10 @@ export default function App() {
 
           <Route path="/gallery" element={
             <section className="py-12 px-4 max-w-7xl mx-auto space-y-20">
-              {/* --- Photos First --- */}
+              {/* --- Photos --- */}
               <div className="animate-fade-in-up">
                   <h2 className="text-3xl md:text-5xl font-black italic text-white tracking-tighter mb-8 pl-4 border-l-8 border-purple-500 uppercase">Photos</h2>
                  <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-8 px-1">
-                    {/* ዳታቤዝ ውስጥ ያሉ ፎቶዎች */}
                     {dbImages.filter(item => !isVideo(item.imageUrl)).map((img, i) => (
                       <div key={`db-p-${i}`} className="aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 group">
                          <img src={img.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
@@ -187,17 +185,15 @@ export default function App() {
                   </div>
               </div>
 
-              {/* --- Videos Section --- */}
+              {/* --- Videos - አሁን በስልክ 3 እንዲሆን grid-cols-3 ተስተካክሏል --- */}
               <div className="animate-fade-in-up">
                   <h2 className="text-3xl md:text-5xl font-black italic text-white tracking-tighter mb-8 pl-4 border-l-8 border-purple-500 uppercase">Videos</h2>
-                  <div className="grid grid-cols-4 gap-2 md:gap-8 px-1">
-                    {/* ዳታቤዝ ውስጥ ያሉ ቪዲዮዎች */}
+                  <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-8 px-1">
                     {dbImages.filter(item => isVideo(item.imageUrl)).map((vid, i) => (
                       <div key={`db-v-${i}`} className="relative aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 bg-black/60 group">
                          <video src={vid.imageUrl} className="w-full h-full object-cover" controls playsInline webkit-playsinline="true" preload="metadata" style={{ objectFit: 'cover' }} />
                       </div>
                     ))}
-                    {/* Static Videos */}
                     {staticVideos.map((vid, i) => (
                       <div key={`st-v-${i}`} className="relative aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 bg-black/60 group">
                          <video src={vid} className="w-full h-full object-cover" controls playsInline webkit-playsinline="true" preload="metadata" style={{ objectFit: 'cover' }} />

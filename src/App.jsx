@@ -181,19 +181,27 @@ export default function App() {
                   </div>
               </div>
 
-              {/* --- Videos Section --- */}
+    {/* --- Videos Section --- */}
 <div className="animate-fade-in-up">
     <h2 className="text-3xl md:text-5xl font-black italic text-white tracking-tighter mb-8 pl-4 border-l-8 border-purple-500 uppercase">Videos</h2>
-    <div className="grid grid-cols-4 gap-2 md:gap-8">
+    
+    {/* በስልክ ላይ ቪዲዮዎቹ ትንሽ እንዲሰፉ gap-2 እና p-1 ተጨምሯል */}
+    <div className="grid grid-cols-4 gap-2 md:gap-8 px-1">
       {staticVideos.map((vid, i) => (
-        <div key={`st-v-${i}`} className="aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 bg-black/40 group relative">
+        <div key={`st-v-${i}`} className="relative aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 bg-black/60 group">
+           
            <video 
              src={vid} 
-             className="w-full h-full object-cover" 
-             controls // የማጫወቻ ቁልፎችን ያመጣል
-             preload="metadata" // ቪዲዮው ሳይከፈት መረጃውን ብቻ ያነባል
-             playsInline 
-           />
+             className="w-full h-full object-cover"
+             controls
+             playsInline
+             webkit-playsinline="true" // ለ iPhone (iOS) ብሮውዘሮች
+             preload="metadata"
+             style={{ objectFit: 'cover' }} // ቪዲዮው ሙሉ ቦታውን እንዲይዝ
+           >
+             የእርስዎ ብሮውዘር ቪዲዮውን ሊያጫውት አልቻለም።
+           </video>
+
         </div>
       ))}
     </div>

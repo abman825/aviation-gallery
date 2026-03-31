@@ -46,28 +46,55 @@ export default function App() {
     } else { alert("የተሳሳተ ፓስወርድ!"); }
   };
 
-  const handleUploadImage = async () => {
-    if(!selectedFile) return alert("እባክህ ፋይል ምረጥ");
-    const formData = new FormData();
-    formData.append('image', selectedFile);
-    try {
-        const res = await fetch(`${API_URL}/gallery`, { method: 'POST', body: formData });
-        if(res.ok) {
-            alert("ተጭኗል!");
-            setSelectedFile(null);
-            fetchImages(); 
-        }
-    } catch (err) { alert("መጫን አልተቻለም"); }
-  };
+const handleUploadImage = async () => {
+  if (!selectedFile) return alert("እባክህ ፋይል ምረጥ");
+  
+  const formData = new FormData();
+  formData.append('image', selectedFile);
 
-  const deleteImage = async (id) => {
-    if(window.confirm("ይህንን ፋይል መሰረዝ ትፈልጋለህ?")) {
-      try {
-        await fetch(`${API_URL}/gallery/${id}`, { method: 'DELETE' });
-        fetchImages();
-      } catch (err) { alert("መሰረዝ አልተቻለም"); }
+  try {
+    const res = await fetch(`${API_URL}/gallery`, {
+      method: 'POST',
+      body: formData, // እዚህ ጋር headers: { 'Content-Type': '...' } በፍጹም አትጨምር!
+    });
+
+    if (res.ok) {
+      alert("በተሳካ ሁኔታ ተጭኗል!");
+      setSelectedFile(null);
+      fetchImages();
+    } else {
+      const errorData = await res.json();
+      alert("መጫን አልተቻለም: " + (errorData.error || "Unknown Error"));
     }
-  };
+  } catch (err) {
+    console.error("Upload Error:", err);
+    alert("ከሰርቨሩ ጋር መገናኘት አልተቻለም");
+  }
+const handleUploadImage = async () => {
+  if (!selectedFile) return alert("እባክህ ፋይል ምረጥ");
+  
+  const formData = new FormData();
+  formData.append('image', selectedFile);
+
+  try {
+    const res = await fetch(`${API_URL}/gallery`, {
+      method: 'POST',
+      body: formData, // እዚህ ጋር headers: { 'Content-Type': '...' } በፍጹም አትጨምር!
+    });
+
+    if (res.ok) {
+      alert("በተሳካ ሁኔታ ተጭኗል!");
+      setSelectedFile(null);
+      fetchImages();
+    } else {
+      const errorData = await res.json();
+      alert("መጫን አልተቻለም: " + (errorData.error || "Unknown Error"));
+    }
+  } catch (err) {
+    console.error("Upload Error:", err);
+    alert("ከሰርቨሩ ጋር መገናኘት አልተቻለም");
+  }
+};
 
   const deleteOrder = async (id) => {
     if(window.confirm("ትዕዛዙን መሰረዝ ትፈልጋለህ?")) {

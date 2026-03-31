@@ -10,10 +10,16 @@ import dotenv from 'dotenv';
 dotenv.config();
 const app = express();
 
-app.use(express.json());
-app.use(cors());
+// --- 1. CORS Configuration ---
+app.use(cors({
+  origin: '*', 
+  methods: ['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-// --- Cloudinary Configuration ---
+app.use(express.json());
+
+// --- 2. Cloudinary Configuration ---
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -24,25 +30,26 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: { 
     folder: 'lilmoo', 
-    resource_type: 'auto' // ይህ ፎቶንም ቪዲዮንም እንዲቀበል ያደርገዋል
+    resource_type: 'auto' 
   }
 });
 const upload = multer({ storage });
 
-// --- Database Models ---
-const GallerySchema = new mongoose.Schema({ imageUrl: String, publicId: String });
-const Gallery = mongoose.model('Gallery', GallerySchema);
+// --- 3. Database Models ---
+const Gallery = mongoose.model('Gallery', new mongoose.Schema({ 
+  imageUrl: String, 
+  publicId: String 
+}));
 
-const OrderSchema = new mongoose.Schema({ 
+const Order = mongoose.model('Order', new mongoose.Schema({ 
   customerName: String, 
   productName: String, 
   status: { type: String, default: 'pending' }, 
   tx_ref: String,
   createdAt: { type: Date, default: Date.now }
-});
-const Order = mongoose.model('Order', OrderSchema);
+}));
 
-// --- Telegram Bot Function ---
+// --- 4. Telegram Bot Function ---
 const sendTelegramTab = async (message) => {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -53,58 +60,73 @@ const sendTelegramTab = async (message) => {
         text: message,
         parse_mode: 'HTML'
       });
-    } catch (err) { console.error("Telegram Error:", err.message); }
+    } catch (err) {
+      console.error("Telegram Error:", err.message);
+    }
   }
 };
 
-// --- API Routes ---
+// --- 5. API Routes ---
 
-// 1. Gallery Routes
+// Gallery: Get All
 app.get('/api/gallery', async (req, res) => {
   try {
     const images = await Gallery.find().sort({ _id: -1 });
     res.json(images);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
+// Gallery: Upload
 app.post('/api/gallery', upload.single('image'), async (req, res) => {
   try {
+    if (!req.file) return res.status(400).json({ error: "No file uploaded" });
     const item = await Gallery.create({ 
       imageUrl: req.file.path, 
       publicId: req.file.filename 
     });
     res.json(item);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// ፋይል ከመረጃ ቋት እና ከ Cloudinary ለመሰረዝ
+// Gallery: Delete
 app.delete('/api/gallery/:id', async (req, res) => {
   try {
     const item = await Gallery.findById(req.params.id);
     if (item && item.publicId) {
-      await cloudinary.uploader.destroy(item.publicId); // ከ Cloudinary ይሰርዘዋል
+      await cloudinary.uploader.destroy(item.publicId);
     }
-    await Gallery.findByIdAndDelete(req.params.id); // ከመረጃ ቋት ይሰርዘዋል
+    await Gallery.findByIdAndDelete(req.params.id);
     res.json({ message: "Deleted successfully" });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// 2. Order Routes
+// Orders: Get All
 app.get('/api/orders', async (req, res) => {
   try {
     const orders = await Order.find().sort({ _id: -1 });
     res.json(orders);
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
+// Orders: Delete
 app.delete('/api/orders/:id', async (req, res) => {
   try {
     await Order.findByIdAndDelete(req.params.id);
     res.json({ message: "Order deleted" });
-  } catch (err) { res.status(500).json({ error: err.message }); }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// 3. Payment Route (Chapa)
+// Payment: Chapa Initialize
 app.post('/api/pay', async (req, res) => {
   const { customerName, productName, amount } = req.body;
   const tx_ref = `tx-${Date.now()}`;
@@ -117,7 +139,6 @@ app.post('/api/pay', async (req, res) => {
       first_name: customerName,
       last_name: productName,
       tx_ref,
-      callback_url: "https://aviation-backend-g75i.onrender.com/api/verify", // ክፍያው ሲጠናቀቅ ቻፓ የሚነግረን
       return_url: "https://aviation-backend-g75i.onrender.com/api/success"
     }, {
       headers: { Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}` }
@@ -126,22 +147,22 @@ app.post('/api/pay', async (req, res) => {
     if (chapaRes.data.status === 'success') {
       await Order.create({ customerName, productName, tx_ref });
       
-      // ቴሌግራም ላይ መልዕክት እንዲልክልህ
+      // Send Telegram Notification
       await sendTelegramTab(`🛍 <b>አዲስ ትዕዛዝ ገብቷል!</b>\n\n👤 ስም: ${customerName}\n👗 አይነት: ${productName}\n💰 ብር: ${amount} ETB`);
       
       res.json(chapaRes.data.data);
     }
   } catch (err) {
-    res.status(500).json({ error: "Payment init failed" });
+    res.status(500).json({ error: "Payment failed" });
   }
 });
 
-// Success Page Route
+// Success Page
 app.get('/api/success', (req, res) => {
   res.send(`
     <html>
       <body style="text-align:center; padding:100px; font-family:sans-serif; background-color:#f4f4f9;">
-        <div style="background:white; padding:50px; border-radius:20px; display:inline-block; shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="background:white; padding:50px; border-radius:20px; display:inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
           <h1 style="color:#28a745; font-size:40px;">✓ ክፍያዎ ተፈፅሟል!</h1>
           <p style="font-size:18px; color:#555;">ትዕዛዝዎን በትክክል ተቀብለናል፣ እናመሰግናለን።</p>
           <br>
@@ -152,13 +173,11 @@ app.get('/api/success', (req, res) => {
   `);
 });
 
-// --- Server & Database Connection ---
+// --- 6. Server & DB Connection ---
 const PORT = process.env.PORT || 10000;
-const MONGO_URI = process.env.MONGODB_URI;
-
-mongoose.connect(MONGO_URI)
+mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
-    console.log("🔥 Connected to MongoDB");
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    console.log("Connected to MongoDB");
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
-  .catch(err => console.error("MongoDB Connection Error:", err));
+  .catch(err => console.error("DB Error:", err));

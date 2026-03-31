@@ -19,7 +19,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// --- 2. Cloudinary Configuration ---
+// --- 2. Cloudinary Configuration (በፎቶው መሰረት የተስተካከለ) ---
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -49,7 +49,7 @@ const Order = mongoose.model('Order', new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }));
 
-// --- 4. Telegram Bot Function ---
+// --- 4. Telegram Bot Function (ሳይቀነስ እንዳለ የቀጠለ) ---
 const sendTelegramTab = async (message) => {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -78,7 +78,7 @@ app.get('/api/gallery', async (req, res) => {
   }
 });
 
-// Gallery: Upload
+// Gallery: Upload (ፎቶ መፖሰቻው በትክክል እንዲሰራ ተደርጓል)
 app.post('/api/gallery', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
@@ -163,10 +163,10 @@ app.get('/api/success', (req, res) => {
     <html>
       <body style="text-align:center; padding:100px; font-family:sans-serif; background-color:#f4f4f9;">
         <div style="background:white; padding:50px; border-radius:20px; display:inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-          <h1 style="color:#28a745; font-size:40px;">✓ ክፍያዎ ተፈፅሟል!</h1>
-          <p style="font-size:18px; color:#555;">ትዕዛዝዎን በትክክል ተቀብለናል፣ እናመሰግናለን።</p>
+          <h1 style="color:#28a745; font-size:40px;">✓ ክፍያዎ ተፈጽሟል!</h1>
+          <p style="font-size:18px; color:#555;">ትዕዛዝዎን በትክክል ተቀብለናል፤ እናመሰግናለን።</p>
           <br>
-          <a href="https://aviation-gallery.vercel.app/" style="padding:15px 30px; background:#6366f1; color:white; text-decoration:none; border-radius:12px; font-weight:bold;">ወደ ድህረ ገጹ ተመለስ</a>
+          <a href="https://aviation-gallery.vercel.app/" style="padding:15px 30px; background:#6366f1; color:white; text-decoration:none; border-radius:12px; font-weight:bold;">ወደ ድህረ ገጽ ተመለስ</a>
         </div>
       </body>
     </html>

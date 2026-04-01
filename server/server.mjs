@@ -7,10 +7,12 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import axios from 'axios';
 import dotenv from 'dotenv';
 
+// 1. .env ፋይልን ማንበብ
 dotenv.config();
+
 const app = express();
 
-// --- 1. CORS Configuration ---
+// --- CORS Configuration ---
 app.use(cors({
   origin: '*', 
   methods: ['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'],
@@ -19,7 +21,8 @@ app.use(cors({
 
 app.use(express.json());
 
-// --- 2. Cloudinary Configuration ---
+// --- Cloudinary Configuration ---
+// እዚህ ጋር በ .env ውስጥ ካሉት ስሞች ጋር በትክክል መመሳሰላቸውን አረጋግጥ
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -35,7 +38,7 @@ const storage = new CloudinaryStorage({
 });
 const upload = multer({ storage });
 
-// --- 3. Database Models ---
+// --- Database Models ---
 const Gallery = mongoose.model('Gallery', new mongoose.Schema({ 
   imageUrl: String, 
   publicId: String 
@@ -49,7 +52,7 @@ const Order = mongoose.model('Order', new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }));
 
-// --- 4. Telegram Bot Function ---
+// --- Telegram Bot Function ---
 const sendTelegramTab = async (message) => {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -66,9 +69,9 @@ const sendTelegramTab = async (message) => {
   }
 };
 
-// --- 5. API Routes ---
+// --- API Routes ---
 
-// Gallery Routes
+// Gallery: Get All
 app.get('/api/gallery', async (req, res) => {
   try {
     const images = await Gallery.find().sort({ _id: -1 });
@@ -78,6 +81,7 @@ app.get('/api/gallery', async (req, res) => {
   }
 });
 
+// Gallery: Upload
 app.post('/api/gallery', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
@@ -91,6 +95,7 @@ app.post('/api/gallery', upload.single('image'), async (req, res) => {
   }
 });
 
+// Gallery: Delete
 app.delete('/api/gallery/:id', async (req, res) => {
   try {
     const item = await Gallery.findById(req.params.id);
@@ -104,7 +109,7 @@ app.delete('/api/gallery/:id', async (req, res) => {
   }
 });
 
-// Order Routes
+// Orders: Get All
 app.get('/api/orders', async (req, res) => {
   try {
     const orders = await Order.find().sort({ _id: -1 });
@@ -114,6 +119,7 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
+// Orders: Delete
 app.delete('/api/orders/:id', async (req, res) => {
   try {
     await Order.findByIdAndDelete(req.params.id);
@@ -123,7 +129,7 @@ app.delete('/api/orders/:id', async (req, res) => {
   }
 });
 
-// Payment Route
+// Payment: Chapa Initialize
 app.post('/api/pay', async (req, res) => {
   const { customerName, productName, amount } = req.body;
   const tx_ref = `tx-${Date.now()}`;
@@ -167,23 +173,28 @@ app.get('/api/success', (req, res) => {
   `);
 });
 
-// --- 6. Optimized Server & DB Connection ---
+// --- 6. አዲሱ የሰርቨር አነሳስ ስልት ---
 const PORT = process.env.PORT || 10000;
 
 const startServer = async () => {
   try {
-    // MongoDB ግንኙነትን ቀድሞ ማረጋገጥ
-    await mongoose.connect(process.env.MONGODB_URI);
-    console.log("✅ Connected to MongoDB");
+    // እዚህ ጋር 'MONGODB_URI' የሚለው ስም በ .env ፋይልህ ውስጥ ካለው ጋር አንድ መሆኑን አረጋግጥ
+    const dbUri = process.env.MONGODB_URI;
 
-    // Render ላይ '0.0.0.0' መጠቀም ግዴታ ነው
+    if (!dbUri) {
+      throw new Error("MONGODB_URI is missing in environment variables!");
+    }
+
+    await mongoose.connect(dbUri);
+    console.log("✅ Connected to MongoDB Successfully!");
+
+    // Render ላይ '0.0.0.0' መጠቀሙን እርግጠኛ ሁን
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
   } catch (err) {
-    console.error("❌ DB Error:", err.message);
-    // ስህተት ካለ በየ 5 ሰከንዱ ድጋሚ እንዲሞክር (Optional) ወይም እንዲቆም
-    process.exit(1);
+    console.error("❌ Critical Error during server start:", err.message);
+    process.exit(1); 
   }
 };
 

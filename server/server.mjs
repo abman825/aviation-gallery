@@ -139,7 +139,6 @@ app.post('/api/pay', async (req, res) => {
 
 // --- 6. የተስተካከለ የ Server Start Logic ---
 const PORT = process.env.PORT || 10000;
-
 const startServer = async () => {
   try {
     // Render የ IP block እንዳያደርግብህ 0.0.0.0/0 መክፈትህን አረጋግጫለሁ

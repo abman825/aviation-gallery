@@ -20,6 +20,7 @@ export default function App() {
   const [adminOrders, setAdminOrders] = useState([]); 
   const [dbImages, setDbImages] = useState([]); 
   const [selectedFile, setSelectedFile] = useState(null); 
+  const [selectedMedia, setSelectedMedia] = useState(null); 
   const { pathname } = useLocation();
   
   const API_URL = "https://aviation-backend-g75i.onrender.com/api"; 
@@ -111,6 +112,17 @@ export default function App() {
           <button onClick={fetchOrders} className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all border border-white/20 text-sm">⚙️</button>
         </div>
       </nav>
+{selectedMedia && (
+  <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4" onClick={() => setSelectedMedia(null)}>
+    <div className="max-w-full max-h-full" onClick={e => e.stopPropagation()}>
+      {isVideo(selectedMedia) ? (
+        <video src={selectedMedia} controls autoPlay className="max-w-full max-h-[90vh] rounded-2xl" />
+      ) : (
+        <img src={selectedMedia} className="max-w-full max-h-[90vh] object-contain rounded-2xl" />
+      )}
+    </div>
+  </div>
+)}
 
       {showAdmin && (
         <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 backdrop-blur-md" onClick={() => setShowAdmin(false)}>

@@ -19,7 +19,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// --- 2. Cloudinary Configuration ---
+// --- 2. Cloudinary Configuration (በፎቶው መሰረት የተስተካከለ) ---
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -49,13 +49,13 @@ const Order = mongoose.model('Order', new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }));
 
-// --- 4. Telegram Bot Function ---
+// --- 4. Telegram Bot Function (ሳይቀነስ እንዳለ የቀጠለ) ---
 const sendTelegramTab = async (message) => {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
   if (token && chatId) {
     try {
-      await axios.post(`https://telegram.org{token}/sendMessage`, {
+      await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
         chat_id: chatId,
         text: message,
         parse_mode: 'HTML'
@@ -78,7 +78,7 @@ app.get('/api/gallery', async (req, res) => {
   }
 });
 
-// Gallery: Upload
+// Gallery: Upload (ፎቶ መፖሰቻው በትክክል እንዲሰራ ተደርጓል)
 app.post('/api/gallery', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
@@ -132,21 +132,24 @@ app.post('/api/pay', async (req, res) => {
   const tx_ref = `tx-${Date.now()}`;
 
   try {
-    const chapaRes = await axios.post('https://chapa.co', {
+    const chapaRes = await axios.post('https://api.chapa.co/v1/transaction/initialize', {
       amount,
       currency: 'ETB',
       email: 'customer@lilmoo.com',
       first_name: customerName,
       last_name: productName,
       tx_ref,
-      return_url: "https://onrender.com"
+      return_url: "https://aviation-backend-g75i.onrender.com/api/success"
     }, {
       headers: { Authorization: `Bearer ${process.env.CHAPA_SECRET_KEY}` }
     });
 
     if (chapaRes.data.status === 'success') {
       await Order.create({ customerName, productName, tx_ref });
+      
+      // Send Telegram Notification
       await sendTelegramTab(`🛍 <b>አዲስ ትዕዛዝ ገብቷል!</b>\n\n👤 ስም: ${customerName}\n👗 አይነት: ${productName}\n💰 ብር: ${amount} ETB`);
+      
       res.json(chapaRes.data.data);
     }
   } catch (err) {
@@ -163,13 +166,12 @@ app.get('/api/success', (req, res) => {
           <h1 style="color:#28a745; font-size:40px;">✓ ክፍያዎ ተፈጽሟል!</h1>
           <p style="font-size:18px; color:#555;">ትዕዛዝዎን በትክክል ተቀብለናል፤ እናመሰግናለን።</p>
           <br>
-          <a href="https://vercel.app" style="padding:15px 30px; background:#6366f1; color:white; text-decoration:none; border-radius:12px; font-weight:bold;">ወደ ድህረ ገጽ ተመለስ</a>
+          <a href="https://aviation-gallery.vercel.app/" style="padding:15px 30px; background:#6366f1; color:white; text-decoration:none; border-radius:12px; font-weight:bold;">ወደ ድህረ ገጽ ተመለስ</a>
         </div>
       </body>
     </html>
   `);
 });
-
 // --- 6. Server & DB Connection (የተስተካከለ) ---
 const PORT = process.env.PORT || 10000;
 

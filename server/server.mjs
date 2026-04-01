@@ -7,12 +7,10 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import axios from 'axios';
 import dotenv from 'dotenv';
 
-// 1. Environment Variables ማንበብ
 dotenv.config();
-
 const app = express();
 
-// --- 2. CORS Configuration ---
+// --- 1. CORS Configuration ---
 app.use(cors({
   origin: '*', 
   methods: ['GET', 'POST', 'DELETE', 'PUT', 'OPTIONS'],
@@ -21,7 +19,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// --- 3. Cloudinary Configuration ---
+// --- 2. Cloudinary Configuration ---
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -37,7 +35,7 @@ const storage = new CloudinaryStorage({
 });
 const upload = multer({ storage });
 
-// --- 4. Database Models ---
+// --- 3. Database Models ---
 const Gallery = mongoose.model('Gallery', new mongoose.Schema({ 
   imageUrl: String, 
   publicId: String 
@@ -51,7 +49,7 @@ const Order = mongoose.model('Order', new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }));
 
-// --- 5. Telegram Bot Function ---
+// --- 4. Telegram Bot Function ---
 const sendTelegramTab = async (message) => {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
@@ -68,9 +66,7 @@ const sendTelegramTab = async (message) => {
   }
 };
 
-// --- 6. API Routes ---
-
-// Gallery Routes
+// --- 5. API Routes ---
 app.get('/api/gallery', async (req, res) => {
   try {
     const images = await Gallery.find().sort({ _id: -1 });
@@ -106,7 +102,6 @@ app.delete('/api/gallery/:id', async (req, res) => {
   }
 });
 
-// Order Routes
 app.get('/api/orders', async (req, res) => {
   try {
     const orders = await Order.find().sort({ _id: -1 });
@@ -116,20 +111,9 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
-app.delete('/api/orders/:id', async (req, res) => {
-  try {
-    await Order.findByIdAndDelete(req.params.id);
-    res.json({ message: "Order deleted" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Payment Route
 app.post('/api/pay', async (req, res) => {
   const { customerName, productName, amount } = req.body;
   const tx_ref = `tx-${Date.now()}`;
-
   try {
     const chapaRes = await axios.post('https://api.chapa.co/v1/transaction/initialize', {
       amount,
@@ -145,7 +129,7 @@ app.post('/api/pay', async (req, res) => {
 
     if (chapaRes.data.status === 'success') {
       await Order.create({ customerName, productName, tx_ref });
-      await sendTelegramTab(`🛍️ <b>አዲስ ትዕዛዝ ገብቷል!</b>\n\n👤 ስም: ${customerName}\n👗 አይነት: ${productName}\n💰 ብር: ${amount} ETB`);
+      await sendTelegramTab(`🛍 <b>አዲስ ትዕዛዝ!</b>\n👤 ስም: ${customerName}\n💰 ብር: ${amount} ETB`);
       res.json(chapaRes.data.data);
     }
   } catch (err) {
@@ -153,43 +137,20 @@ app.post('/api/pay', async (req, res) => {
   }
 });
 
-// Success Page
-app.get('/api/success', (req, res) => {
-  res.send(`
-    <html>
-      <body style="text-align:center; padding:100px; font-family:sans-serif; background-color:#f4f4f9;">
-        <div style="background:white; padding:50px; border-radius:20px; display:inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-          <h1 style="color:#28a745; font-size:40px;">✓ ክፍያዎ ተፈጽሟል!</h1>
-          <p style="font-size:18px; color:#555;">ትዕዛዝዎን በትክክል ተቀብለናል፤ እናመሰግናለን።</p>
-          <br>
-          <a href="https://aviation-gallery.vercel.app/" style="padding:15px 30px; background:#6366f1; color:white; text-decoration:none; border-radius:12px; font-weight:bold;">ወደ ድህረ ገጽ ተመለስ</a>
-        </div>
-      </body>
-    </html>
-  `);
-});
-
-// --- 7. Server & DB Connection (ለ Render የተስተካከለ) ---
+// --- 6. የተስተካከለ የ Server Start Logic ---
 const PORT = process.env.PORT || 10000;
 
 const startServer = async () => {
   try {
-    const uri = process.env.MONGODB_URI;
-    if (!uri) {
-      throw new Error("MONGODB_URI is missing! Please add it to Render Environment Variables.");
-    }
-
-    // 10 ሰከንድ ሰርቨሩ ዳታቤዙን እንዲጠብቅ ተደርጓል
-    await mongoose.connect(uri, {
-      serverSelectionTimeoutMS: 10000
-    });
+    // Render የ IP block እንዳያደርግብህ 0.0.0.0/0 መክፈትህን አረጋግጫለሁ
+    await mongoose.connect(process.env.MONGODB_URI);
     console.log("✅ Connected to MongoDB Successfully");
 
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
   } catch (err) {
-    console.error("❌ Critical Error during start:", err.message);
+    console.error("❌ DB Connection Error:", err.message);
     process.exit(1); 
   }
 };

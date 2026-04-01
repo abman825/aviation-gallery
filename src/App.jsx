@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import './App.css'; 
 
-// --- Static Assets (Images & Videos) ---
+// --- Static Assets ---
 import img1 from './assets/1.jpg'; import vid1 from './assets/1.mp4';
 import img2 from './assets/2.jpg'; import vid2 from './assets/2.mp4';
 import img3 from './assets/3.jpg'; import vid3 from './assets/3.mp4';
@@ -20,7 +20,7 @@ export default function App() {
   const [adminOrders, setAdminOrders] = useState([]); 
   const [dbImages, setDbImages] = useState([]); 
   const [selectedFile, setSelectedFile] = useState(null); 
-  const [selectedMedia, setSelectedMedia] = useState(null); 
+  const [selectedImage, setSelectedImage] = useState(null); // ለፎቶ Fullscreen ማሳያ አዲስ የተጨመረ
   const { pathname } = useLocation();
   
   const API_URL = "https://aviation-backend-g75i.onrender.com/api"; 
@@ -83,16 +83,11 @@ export default function App() {
 
   const isVideo = (url) => url.match(/\.(mp4|webm|ogg|mov)$/i);
 
-  // ቪዲዮ ሲጫወት Fullscreen እንዲሆን የሚያደርግ function
   const handleVideoPlay = (e) => {
     const video = e.target;
-    if (video.requestFullscreen) {
-      video.requestFullscreen();
-    } else if (video.webkitEnterFullscreen) {
-      video.webkitEnterFullscreen(); // ለ iPhone/Safari
-    } else if (video.msRequestFullscreen) {
-      video.msRequestFullscreen();
-    }
+    if (video.requestFullscreen) { video.requestFullscreen(); } 
+    else if (video.webkitEnterFullscreen) { video.webkitEnterFullscreen(); } 
+    else if (video.msRequestFullscreen) { video.msRequestFullscreen(); }
   };
 
   return (
@@ -112,17 +107,21 @@ export default function App() {
           <button onClick={fetchOrders} className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 rounded-full transition-all border border-white/20 text-sm">⚙️</button>
         </div>
       </nav>
-{selectedMedia && (
-  <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center p-4" onClick={() => setSelectedMedia(null)}>
-    <div className="max-w-full max-h-full" onClick={e => e.stopPropagation()}>
-      {isVideo(selectedMedia) ? (
-        <video src={selectedMedia} controls autoPlay className="max-w-full max-h-[90vh] rounded-2xl" />
-      ) : (
-        <img src={selectedMedia} className="max-w-full max-h-[90vh] object-contain rounded-2xl" />
+
+      {/* --- Full Image Modal Overlay --- */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-[200] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 cursor-pointer"
+          onClick={() => setSelectedImage(null)}
+        >
+          <button className="absolute top-8 right-8 text-white text-5xl font-thin hover:text-purple-400 transition-all">&times;</button>
+          <img 
+            src={selectedImage} 
+            className="max-w-full max-h-[90vh] rounded-2xl shadow-2xl border border-white/10 animate-zoom-in" 
+            alt="Full View" 
+          />
+        </div>
       )}
-    </div>
-  </div>
-)}
 
       {showAdmin && (
         <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center p-4 backdrop-blur-md" onClick={() => setShowAdmin(false)}>
@@ -191,51 +190,33 @@ export default function App() {
 
           <Route path="/gallery" element={
             <section className="py-12 px-4 max-w-7xl mx-auto space-y-20">
-              {/* --- Photos (Mobile 3, Desktop 4) --- */}
               <div className="animate-fade-in-up">
                   <h2 className="text-3xl md:text-5xl font-black italic text-white tracking-tighter mb-8 pl-4 border-l-8 border-purple-500 uppercase">Photos</h2>
                  <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-8 px-1">
                     {dbImages.filter(item => !isVideo(item.imageUrl)).map((img, i) => (
-                      <div key={`db-p-${i}`} className="aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 group">
+                      <div key={`db-p-${i}`} onClick={() => setSelectedImage(img.imageUrl)} className="aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 group cursor-pointer">
                          <img src={img.imageUrl} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                       </div>
                     ))}
                     {staticPhotos.map((pic, i) => (
-                      <div key={`st-p-${i}`} className="aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 group">
+                      <div key={`st-p-${i}`} onClick={() => setSelectedImage(pic)} className="aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 group cursor-pointer">
                          <img src={pic} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                       </div>
                     ))}
                   </div>
               </div>
 
-              {/* --- Videos (Mobile 3, Desktop 4) + Auto Fullscreen on Play --- */}
               <div className="animate-fade-in-up">
                   <h2 className="text-3xl md:text-5xl font-black italic text-white tracking-tighter mb-8 pl-4 border-l-8 border-purple-500 uppercase">Videos</h2>
                   <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-8 px-1">
                     {dbImages.filter(item => isVideo(item.imageUrl)).map((vid, i) => (
                       <div key={`db-v-${i}`} className="relative aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 bg-black/60 group">
-                         <video 
-                           src={vid.imageUrl} 
-                           className="w-full h-full object-cover" 
-                           controls 
-                           playsInline 
-                           onPlay={handleVideoPlay}
-                           preload="metadata" 
-                           style={{ objectFit: 'cover' }} 
-                         />
+                         <video src={vid.imageUrl} className="w-full h-full object-cover" controls playsInline onPlay={handleVideoPlay} preload="metadata" style={{ objectFit: 'cover' }} />
                       </div>
                     ))}
                     {staticVideos.map((vid, i) => (
                       <div key={`st-v-${i}`} className="relative aspect-[3/4] rounded-xl md:rounded-[45px] overflow-hidden shadow-2xl hover:-translate-y-2 transition-all duration-700 ring-1 ring-white/20 bg-black/60 group">
-                         <video 
-                           src={vid} 
-                           className="w-full h-full object-cover" 
-                           controls 
-                           playsInline 
-                           onPlay={handleVideoPlay}
-                           preload="metadata" 
-                           style={{ objectFit: 'cover' }} 
-                         />
+                         <video src={vid} className="w-full h-full object-cover" controls playsInline onPlay={handleVideoPlay} preload="metadata" style={{ objectFit: 'cover' }} />
                       </div>
                     ))}
                   </div>

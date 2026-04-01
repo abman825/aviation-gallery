@@ -9,27 +9,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- Simple Model ---
-const Gallery = mongoose.model('Gallery', new mongoose.Schema({ 
-  imageUrl: String 
-}));
-
 // --- Test Route ---
 app.get('/', (req, res) => {
-  res.send("Server is running and waiting for DB...");
+  res.send("Server is running! Waiting for DB connection...");
 });
 
-// --- API Test Route ---
-app.get('/api/test', async (req, res) => {
-  try {
-    const data = await Gallery.find();
-    res.json({ message: "Connected to DB!", data });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// --- Server & DB Connection ---
+// --- Server & DB Connection Logic ---
 const PORT = process.env.PORT || 10000;
 
 mongoose.connect(process.env.MONGODB_URI)

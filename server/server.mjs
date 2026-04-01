@@ -39,7 +39,6 @@ mongoose.connect(process.env.MONGODB_URI)
       console.log(`🚀 Server is live on port ${PORT}`);
     });
   })
-  
   .catch(err => {
     console.error("❌ DB Connection Error:", err.message);
   });

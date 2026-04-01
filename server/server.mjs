@@ -19,7 +19,7 @@ app.use(cors({
 
 app.use(express.json());
 
-// --- 2. Cloudinary Configuration ---
+// --- 2. Cloudinary Configuration (.env ላይ ባለው ስም መሰረት) ---
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -49,24 +49,7 @@ const Order = mongoose.model('Order', new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 }));
 
-// --- 4. Telegram Bot Function ---
-const sendTelegramTab = async (message) => {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const chatId = process.env.TELEGRAM_CHAT_ID;
-  if (token && chatId) {
-    try {
-      await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
-        chat_id: chatId,
-        text: message,
-        parse_mode: 'HTML'
-      });
-    } catch (err) {
-      console.error("Telegram Error:", err.message);
-    }
-  }
-};
-
-// --- 5. API Routes ---
+// --- 4. API Routes ---
 
 // Gallery: Get All
 app.get('/api/gallery', async (req, res) => {
@@ -116,17 +99,7 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
-// Orders: Delete
-app.delete('/api/orders/:id', async (req, res) => {
-  try {
-    await Order.findByIdAndDelete(req.params.id);
-    res.json({ message: "Order deleted" });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Payment: Chapa Initialize
+// Payment: Chapa Initialize (ቴሌግራም ተወግዷል)
 app.post('/api/pay', async (req, res) => {
   const { customerName, productName, amount } = req.body;
   const tx_ref = `tx-${Date.now()}`;
@@ -146,10 +119,6 @@ app.post('/api/pay', async (req, res) => {
 
     if (chapaRes.data.status === 'success') {
       await Order.create({ customerName, productName, tx_ref });
-      
-      // Send Telegram Notification
-      await sendTelegramTab(`🛍 <b>አዲስ ትዕዛዝ ገብቷል!</b>\n\n👤 ስም: ${customerName}\n👗 አይነት: ${productName}\n💰 ብር: ${amount} ETB`);
-      
       res.json(chapaRes.data.data);
     }
   } catch (err) {
@@ -161,38 +130,24 @@ app.post('/api/pay', async (req, res) => {
 app.get('/api/success', (req, res) => {
   res.send(`
     <html>
-      <body style="text-align:center; padding:100px; font-family:sans-serif; background-color:#f4f4f9;">
-        <div style="background:white; padding:50px; border-radius:20px; display:inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-          <h1 style="color:#28a745; font-size:40px;">✓ ክፍያዎ ተፈጽሟል!</h1>
-          <p style="font-size:18px; color:#555;">ትዕዛዝዎን በትክክል ተቀብለናል፤ እናመሰግናለን።</p>
-          <br>
-          <a href="https://aviation-gallery.vercel.app/" style="padding:15px 30px; background:#6366f1; color:white; text-decoration:none; border-radius:12px; font-weight:bold;">ወደ ድህረ ገጽ ተመለስ</a>
-        </div>
+      <body style="text-align:center; padding:100px; font-family:sans-serif;">
+        <h1 style="color:#28a745;">✓ ክፍያዎ ተፈጽሟል!</h1>
+        <a href="https://aviation-gallery.vercel.app/">ወደ ድህረ ገጽ ተመለስ</a>
       </body>
     </html>
   `);
 });
 
-// --- 6. Optimized Server & DB Connection (ለ Render የተስተካከለ) ---
+// --- 5. Server & DB Connection ---
 const PORT = process.env.PORT || 10000;
 
-const startServer = async () => {
-  try {
-    // Render ላይ የሞላኸውን MONGODB_URI መኖሩን ያረጋግጣል
-    const uri = process.env.MONGODB_URI;
-    if (!uri) throw new Error("MONGODB_URI is missing in environment variables!");
-
-    await mongoose.connect(uri);
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
     console.log("✅ Connected to MongoDB Successfully");
-
-    // Render ላይ ሰርቨሩ እንዲታይ '0.0.0.0' መጠቀም ግዴታ ነው
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
-  } catch (err) {
-    console.error("❌ Critical Error during server start:", err.message);
-    process.exit(1); 
-  }
-};
-
-startServer();
+  })
+  .catch(err => {
+    console.error("❌ DB Connection Error:", err.message);
+  });

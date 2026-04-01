@@ -67,6 +67,8 @@ const sendTelegramTab = async (message) => {
 };
 
 // --- 5. API Routes ---
+
+// Gallery: Get All
 app.get('/api/gallery', async (req, res) => {
   try {
     const images = await Gallery.find().sort({ _id: -1 });
@@ -76,6 +78,7 @@ app.get('/api/gallery', async (req, res) => {
   }
 });
 
+// Gallery: Upload
 app.post('/api/gallery', upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
@@ -89,6 +92,7 @@ app.post('/api/gallery', upload.single('image'), async (req, res) => {
   }
 });
 
+// Gallery: Delete
 app.delete('/api/gallery/:id', async (req, res) => {
   try {
     const item = await Gallery.findById(req.params.id);
@@ -102,6 +106,7 @@ app.delete('/api/gallery/:id', async (req, res) => {
   }
 });
 
+// Orders: Get All
 app.get('/api/orders', async (req, res) => {
   try {
     const orders = await Order.find().sort({ _id: -1 });
@@ -111,9 +116,21 @@ app.get('/api/orders', async (req, res) => {
   }
 });
 
+// Orders: Delete
+app.delete('/api/orders/:id', async (req, res) => {
+  try {
+    await Order.findByIdAndDelete(req.params.id);
+    res.json({ message: "Order deleted" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Payment: Chapa Initialize
 app.post('/api/pay', async (req, res) => {
   const { customerName, productName, amount } = req.body;
   const tx_ref = `tx-${Date.now()}`;
+
   try {
     const chapaRes = await axios.post('https://api.chapa.co/v1/transaction/initialize', {
       amount,
@@ -129,7 +146,10 @@ app.post('/api/pay', async (req, res) => {
 
     if (chapaRes.data.status === 'success') {
       await Order.create({ customerName, productName, tx_ref });
-      await sendTelegramTab(`🛍 <b>አዲስ ትዕዛዝ!</b>\n👤 ስም: ${customerName}\n💰 ብር: ${amount} ETB`);
+      
+      // Send Telegram Notification
+      await sendTelegramTab(`🛍 <b>አዲስ ትዕዛዝ ገብቷል!</b>\n\n👤 ስም: ${customerName}\n👗 አይነት: ${productName}\n💰 ብር: ${amount} ETB`);
+      
       res.json(chapaRes.data.data);
     }
   } catch (err) {
@@ -137,19 +157,40 @@ app.post('/api/pay', async (req, res) => {
   }
 });
 
-// --- 6. የተስተካከለ የ Server Start Logic ---
+// Success Page
+app.get('/api/success', (req, res) => {
+  res.send(`
+    <html>
+      <body style="text-align:center; padding:100px; font-family:sans-serif; background-color:#f4f4f9;">
+        <div style="background:white; padding:50px; border-radius:20px; display:inline-block; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+          <h1 style="color:#28a745; font-size:40px;">✓ ክፍያዎ ተፈጽሟል!</h1>
+          <p style="font-size:18px; color:#555;">ትዕዛዝዎን በትክክል ተቀብለናል፤ እናመሰግናለን።</p>
+          <br>
+          <a href="https://aviation-gallery.vercel.app/" style="padding:15px 30px; background:#6366f1; color:white; text-decoration:none; border-radius:12px; font-weight:bold;">ወደ ድህረ ገጽ ተመለስ</a>
+        </div>
+      </body>
+    </html>
+  `);
+});
+
+// --- 6. Optimized Server & DB Connection (ለ Render የተስተካከለ) ---
 const PORT = process.env.PORT || 10000;
+
 const startServer = async () => {
   try {
-    // Render የ IP block እንዳያደርግብህ 0.0.0.0/0 መክፈትህን አረጋግጫለሁ
-    await mongoose.connect(process.env.MONGODB_URI);
+    // Render ላይ የሞላኸውን MONGODB_URI መኖሩን ያረጋግጣል
+    const uri = process.env.MONGODB_URI;
+    if (!uri) throw new Error("MONGODB_URI is missing in environment variables!");
+
+    await mongoose.connect(uri);
     console.log("✅ Connected to MongoDB Successfully");
 
+    // Render ላይ ሰርቨሩ እንዲታይ '0.0.0.0' መጠቀም ግዴታ ነው
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Server running on port ${PORT}`);
     });
   } catch (err) {
-    console.error("❌ DB Connection Error:", err.message);
+    console.error("❌ Critical Error during server start:", err.message);
     process.exit(1); 
   }
 };

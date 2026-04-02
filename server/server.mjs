@@ -46,7 +46,6 @@ app.get('/api/gallery', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 // --- Server & DB Connection ---
 // ሰርቨሩ መጀመሪያ ይነሳል (Render 'Live' እንዲለው)
 app.listen(PORT, '0.0.0.0', () => {

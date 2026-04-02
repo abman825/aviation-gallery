@@ -156,7 +156,6 @@ app.get('/api/success', (req, res) => {
     </html>
   `);
 });
-
 // --- 6. Server & DB Connection ---
 const PORT = process.env.PORT || 10000;
 

@@ -36,7 +36,6 @@ app.get('/', (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? "Connected" : "Disconnected";
   res.send(`Server is LIVE! Database (${dbStatus})`);
 });
-
 // ለሪአክቱ App.jsx መረጃ እንዲያገኝ
 app.get('/api/gallery', async (req, res) => {
   try {

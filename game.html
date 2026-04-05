@@ -1,149 +1,213 @@
 <!DOCTYPE html>
-<html>
+<html lang="am">
 <head>
-    <title>Lilmoo Brick Breaker</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lilmoo Brick Breaker - Stage Mode</title>
     <style>
-        body { background-color: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; color: white; font-family: Arial, sans-serif; }
-        canvas { background: #000; display: block; border: 3px solid #0095DD; border-radius: 8px; box-shadow: 0 0 20px rgba(0,149,221,0.5); }
-        .game-info { position: absolute; top: 20px; text-align: center; }
+        * { padding: 0; margin: 0; }
+        body { 
+            background: #1a1a1a; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            overflow: hidden;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+        canvas { 
+            background: #2c3e50; 
+            display: block; 
+            border: 4px solid #ffd700;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+            max-width: 95vw;
+            max-height: 70vh;
+        }
+        .info { margin-bottom: 10px; text-align: center; }
     </style>
 </head>
 <body>
-    <div class="game-info">
-        <h1>Lilmoo Arcade</h1>
-        <p>የግራና ቀኝ ቀስቶችን በመጠቀም ጡቦቹን ሰብር!</p>
-    </div>
-    <canvas id="myCanvas" width="480" height="320"></canvas>
 
-    <script>
-        var canvas = document.getElementById("myCanvas");
-        var ctx = canvas.getContext("2d");
-        var x = canvas.width/2;
-        var y = canvas.height-30;
-        var dx = 2;
-        var dy = -2;
-        var ballRadius = 10;
-        var score = 0;
-        // Paddle (መቅዘፊያ)
-        var paddleHeight = 10;
-        var paddleWidth = 75;
-        var paddleX = (canvas.width-paddleWidth)/2;
+<div class="info">
+    <h2>Lilmoo Design Game</h2>
+    <p>ስክሪኑን በመንካት ወይም በ Arrow Keys ይቆጣጠሩ</p>
+</div>
 
-        // Bricks (ጡቦች)
-        var brickRowCount = 3;
-        var brickColumnCount = 5;
-        var brickWidth = 75;
-        var brickHeight = 20;
-        var brickPadding = 10;
-        var brickOffsetTop = 30;
-        var brickOffsetLeft = 30;
+<canvas id="myCanvas" width="480" height="320"></canvas>
 
-        var bricks = [];
-        for(var c=0; c<brickColumnCount; c++) {
+<script>
+    var canvas = document.getElementById("myCanvas");
+    var ctx = canvas.getContext("2d");
+    var ballRadius = 10;
+    var x = canvas.width / 2;
+    var y = canvas.height - 30;
+
+    // ደረጃ እና ፍጥነት
+    var stage = 1;
+    var speedMultiplier = 2;
+    var dx = speedMultiplier;
+    var dy = -speedMultiplier;
+
+    var paddleHeight = 12;
+    var paddleWidth = 85;
+    var paddleX = (canvas.width - paddleWidth) / 2;
+    
+    var rightPressed = false;
+    var leftPressed = false;
+
+    // የጡቦች ቅንብር
+    var brickRowCount = 3;
+    var brickColumnCount = 5;
+    var brickWidth = 75;
+    var brickHeight = 20;
+    var brickPadding = 10;
+    var brickOffsetTop = 40;
+    var brickOffsetLeft = 30;
+
+    var score = 0;
+    var bricks = [];
+
+    function initBricks() {
+        bricks = [];
+        for (var c = 0; c < brickColumnCount; c++) {
             bricks[c] = [];
-            for(var r=0; r<brickRowCount; r++) {
+            for (var r = 0; r < brickRowCount; r++) {
                 bricks[c][r] = { x: 0, y: 0, status: 1 };
             }
         }
+    }
+    initBricks();
 
-        var rightPressed = false;
-        var leftPressed = false;
+    // Key እና Touch Controls
+    document.addEventListener("keydown", keyDownHandler, false);
+    document.addEventListener("keyup", keyUpHandler, false);
+    document.addEventListener("touchstart", touchHandler, false);
+    document.addEventListener("touchmove", touchHandler, false);
 
-        document.addEventListener("keydown", keyDownHandler, false);
-        document.addEventListener("keyup", keyUpHandler, false);
+    function keyDownHandler(e) {
+        if (e.key == "Right" || e.key == "ArrowRight") rightPressed = true;
+        else if (e.key == "Left" || e.key == "ArrowLeft") leftPressed = true;
+    }
 
-        function keyDownHandler(e) {
-            if(e.key == "Right" || e.key == "ArrowRight") { rightPressed = true; }
-            else if(e.key == "Left" || e.key == "ArrowLeft") { leftPressed = true; }
+    function keyUpHandler(e) {
+        if (e.key == "Right" || e.key == "ArrowRight") rightPressed = false;
+        else if (e.key == "Left" || e.key == "ArrowLeft") leftPressed = false;
+    }
+
+    function touchHandler(e) {
+        e.preventDefault();
+        var relativeX = e.touches[0].clientX - canvas.offsetLeft;
+        if (relativeX > 0 && relativeX < canvas.width) {
+            paddleX = relativeX - paddleWidth / 2;
         }
-        function keyUpHandler(e) {
-            if(e.key == "Right" || e.key == "ArrowRight") { rightPressed = false; }
-            else if(e.key == "Left" || e.key == "ArrowLeft") { leftPressed = false; }
-        }
+    }
 
-        function collisionDetection() {
-            for(var c=0; c<brickColumnCount; c++) {
-                for(var r=0; r<brickRowCount; r++) {
-                    var b = bricks[c][r];
-                    if(b.status == 1) {
-                        if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
-                            dy = -dy;
-                            b.status = 0;
-                            score++;
-                            if(score == brickRowCount*brickColumnCount) {
-                                alert("አሸንፈሃል! ድንቅ ነው!");
-                                document.location.reload();
-                            }
-                        } 
+    function collisionDetection() {
+        for (var c = 0; c < brickColumnCount; c++) {
+            for (var r = 0; r < brickRowCount; r++) {
+                var b = bricks[c][r];
+                if (b.status == 1) {
+                    if (x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
+                        dy = -dy;
+                        b.status = 0;
+                        score++;
+                        // ደረጃ የማለፍ Logic
+                        if (score == brickRowCount * brickColumnCount) {
+                            stage++;
+                            speedMultiplier += 0.8; // ፍጥነት መጨመር
+                            if(brickRowCount < 6) brickRowCount++; // ጡብ መጨመር
+                            alert("Stage " + (stage-1) + " ተጠናቋል! ወደ Stage " + stage + " ይለፉ።");
+                            resetLevel();
+                        }
                     }
                 }
             }
         }
+    }
 
-        function drawBall() {
-            ctx.beginPath();
-            ctx.arc(x, y, ballRadius, 0, Math.PI*2);
-            ctx.fillStyle = "#0095DD";
-            ctx.fill();
-            ctx.closePath();
-        }
-        function drawPaddle() {
-            ctx.beginPath();
-            ctx.rect(paddleX, canvas.height-paddleHeight, paddleWidth, paddleHeight);
-            ctx.fillStyle = "#0095DD";
-            ctx.fill();
-            ctx.closePath();
-        }
-        function drawBricks() {
-            for(var c=0; c<brickColumnCount; c++) {
-                for(var r=0; r<brickRowCount; r++) {
-                    if(bricks[c][r].status == 1) {
-                        var brickX = (c*(brickWidth+brickPadding))+brickOffsetLeft;
-                        var brickY = (r*(brickHeight+brickPadding))+brickOffsetTop;
-                        bricks[c][r].x = brickX;
-                        bricks[c][r].y = brickY;
-                        ctx.beginPath();
-                        ctx.rect(brickX, brickY, brickWidth, brickHeight);
-                        ctx.fillStyle = "#0095DD";
-                        ctx.fill();
-                        ctx.closePath();
-                    }
+    function resetLevel() {
+        x = canvas.width / 2;
+        y = canvas.height - 30;
+        dx = speedMultiplier;
+        dy = -speedMultiplier;
+        paddleX = (canvas.width - paddleWidth) / 2;
+        score = 0;
+        initBricks();
+    }
+
+    function drawBall() {
+        ctx.beginPath();
+        ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "#ff4d4d"; // የቀይ ቀለም
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function drawPaddle() {
+        ctx.beginPath();
+        ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+        ctx.fillStyle = "#ffffff";
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    function drawBricks() {
+        for (var c = 0; c < brickColumnCount; c++) {
+            for (var r = 0; r < brickRowCount; r++) {
+                if (bricks[c][r].status == 1) {
+                    var brickX = (c * (brickWidth + brickPadding)) + brickOffsetLeft;
+                    var brickY = (r * (brickHeight + brickPadding)) + brickOffsetTop;
+                    bricks[c][r].x = brickX;
+                    bricks[c][r].y = brickY;
+                    ctx.beginPath();
+                    ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                    ctx.fillStyle = "#ffd700"; // የወርቅ ቀለም
+                    ctx.fill();
+                    ctx.closePath();
                 }
             }
         }
-        function drawScore() {
-            ctx.font = "16px Arial";
-            ctx.fillStyle = "#0095DD";
-            ctx.fillText("Score: "+score, 8, 20);
-        }
+    }
 
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawBricks();
-            drawBall();
-            drawPaddle();
-            drawScore();
-            collisionDetection();
+    function drawStatus() {
+        ctx.font = "bold 16px Arial";
+        ctx.fillStyle = "#00f2fe";
+        ctx.fillText("ውጤት: " + score, 8, 20); // ስኮር ማሳያ
+        ctx.fillText("Stage: " + stage, canvas.width - 85, 20); // ስቴጅ ማሳያ
+    }
 
-            if(x + dx > canvas.width-ballRadius || x + dx < ballRadius) { dx = -dx; }
-            if(y + dy < ballRadius) { dy = -dy; }
-            else if(y + dy > canvas.height-ballRadius) {
-                if(x > paddleX && x < paddleX + paddleWidth) { dy = -dy; }
-                else {
-                    alert("GAME OVER");
-                    document.location.reload();
-                    clearInterval(interval);
-                }
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawBricks();
+        drawBall();
+        drawPaddle();
+        drawStatus();
+        collisionDetection();
+
+        if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) dx = -dx;
+        if (y + dy < ballRadius) dy = -dy;
+        else if (y + dy > canvas.height - ballRadius) {
+            if (x > paddleX && x < paddleX + paddleWidth) {
+                dy = -dy;
+            } else {
+                alert("GAME OVER! የመጨረሻ ውጤት: " + score);
+                document.location.reload();
             }
-
-            if(rightPressed && paddleX < canvas.width-paddleWidth) { paddleX += 7; }
-            else if(leftPressed && paddleX > 0) { paddleX -= 7; }
-
-            
-            x += dx;
-            y += dy;
         }
-        var interval = setInterval(draw, 10);
-    </script>
+
+        if (rightPressed && paddleX < canvas.width - paddleWidth) paddleX += 7;
+        else if (leftPressed && paddleX > 0) paddleX -= 7;
+
+        x += dx;
+        y += dy;
+        requestAnimationFrame(draw);
+    }
+
+    draw();
+</script>
+
 </body>
 </html>

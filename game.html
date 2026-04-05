@@ -3,123 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Lilmoo Brick Breaker - Stage Mode</title>
+    <title>Lilmoo Fullscreen Game</title>
     <style>
-        * { padding: 0; margin: 0; }
-        body { 
+        * { padding: 0; margin: 0; box-sizing: border-box; }
+        body, html { 
+            width: 100%; 
+            height: 100%; 
+            overflow: hidden; 
             background: #1a1a1a; 
-            display: flex; 
-            flex-direction: column;
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
-            overflow: hidden;
-            color: white;
-            font-family: Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         canvas { 
             background: #2c3e50; 
             display: block; 
-            border: 4px solid #ffd700;
-            border-radius: 10px;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
-            max-width: 95vw;
-            max-height: 70vh;
+            touch-action: none; /* ስክሪኑ እንዳይላወስ */
         }
-        .info { margin-bottom: 10px; text-align: center; }
+        #ui-overlay {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #00f2fe;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            pointer-events: none; /* በጽሁፉ ላይ ክሊክ እንዳይደረግ */
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        #fullscreen-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            background: rgba(255, 215, 0, 0.7);
+            border: none;
+            border-radius: 5px;
+            color: black;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
 
-<div class="info">
-    <h2>Lilmoo Design Game</h2>
-    <p>ስክሪኑን በመንካት ወይም በ Arrow Keys ይቆጣጠሩ</p>
-</div>
+    <div id="ui-overlay">
+        <div id="scoreLabel">ውጤት: 0</div>
+        <div id="stageLabel">Stage: 1</div>
+    </div>
 
-<canvas id="myCanvas" width="480" height="320"></canvas>
+    <button id="fullscreen-btn" onclick="toggleFullscreen()">Full Screen</button>
+    <canvas id="myCanvas"></canvas>
 
 <script>
     var canvas = document.getElementById("myCanvas");
     var ctx = canvas.getContext("2d");
-    var ballRadius = 10;
-    var x = canvas.width / 2;
-    var y = canvas.height - 30;
 
-    // ደረጃ እና ፍጥነት
-    var stage = 1;
-    var speedMultiplier = 2;
-    var dx = speedMultiplier;
-    var dy = -speedMultiplier;
+    // ካንቫሱ ስክሪኑን እንዲሞላ ማድረግ
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        resetLevel(); // ስክሪኑ ሲቀየር ኳሷ እንዳትጠፋ
+    }
+    window.addEventListener('resize', resizeCanvas);
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    var paddleHeight = 12;
-    var paddleWidth = 85;
-    var paddleX = (canvas.width - paddleWidth) / 2;
+    var ballRadius = 12;
+    var x, y, dx, dy;
+    var paddleHeight = 15;
+    var paddleWidth = canvas.width / 4; // መቅዘፊያው ከስክሪኑ ጋር እንዲመጣጠን
+    var paddleX;
     
-    var rightPressed = false;
-    var leftPressed = false;
+    var stage = 1;
+    var speedBase = 3; 
+    var score = 0;
 
     // የጡቦች ቅንብር
     var brickRowCount = 3;
     var brickColumnCount = 5;
-    var brickWidth = 75;
-    var brickHeight = 20;
     var brickPadding = 10;
-    var brickOffsetTop = 40;
-    var brickOffsetLeft = 30;
-
-    var score = 0;
+    var brickOffsetTop = 60;
+    var brickOffsetLeft = 20;
     var bricks = [];
 
     function initBricks() {
+        var totalPadding = brickPadding * (brickColumnCount - 1);
+        var availableWidth = canvas.width - (brickOffsetLeft * 2) - totalPadding;
+        var brickWidth = availableWidth / brickColumnCount;
+        var brickHeight = 25;
+
         bricks = [];
         for (var c = 0; c < brickColumnCount; c++) {
             bricks[c] = [];
             for (var r = 0; r < brickRowCount; r++) {
-                bricks[c][r] = { x: 0, y: 0, status: 1 };
+                bricks[c][r] = { 
+                    x: (c * (brickWidth + brickPadding)) + brickOffsetLeft, 
+                    y: (r * (brickHeight + brickPadding)) + brickOffsetTop, 
+                    status: 1,
+                    width: brickWidth,
+                    height: brickHeight
+                };
             }
         }
     }
-    initBricks();
 
-    // Key እና Touch Controls
-    document.addEventListener("keydown", keyDownHandler, false);
-    document.addEventListener("keyup", keyUpHandler, false);
-    document.addEventListener("touchstart", touchHandler, false);
-    document.addEventListener("touchmove", touchHandler, false);
-
-    function keyDownHandler(e) {
-        if (e.key == "Right" || e.key == "ArrowRight") rightPressed = true;
-        else if (e.key == "Left" || e.key == "ArrowLeft") leftPressed = true;
+    function resetLevel() {
+        x = canvas.width / 2;
+        y = canvas.height - 40;
+        dx = speedBase + (stage * 0.5);
+        dy = -(speedBase + (stage * 0.5));
+        paddleX = (canvas.width - paddleWidth) / 2;
+        paddleWidth = canvas.width / 4; 
+        initBricks();
     }
 
-    function keyUpHandler(e) {
-        if (e.key == "Right" || e.key == "ArrowRight") rightPressed = false;
-        else if (e.key == "Left" || e.key == "ArrowLeft") leftPressed = false;
-    }
-
-    function touchHandler(e) {
+    // መቆጣጠሪያዎች
+    document.addEventListener("touchmove", function(e) {
         e.preventDefault();
-        var relativeX = e.touches[0].clientX - canvas.offsetLeft;
-        if (relativeX > 0 && relativeX < canvas.width) {
+        var touch = e.touches[0];
+        var relativeX = touch.clientX - canvas.offsetLeft;
+        if(relativeX > 0 && relativeX < canvas.width) {
             paddleX = relativeX - paddleWidth / 2;
         }
-    }
+    }, { passive: false });
+
+    document.addEventListener("mousemove", function(e) {
+        var relativeX = e.clientX - canvas.offsetLeft;
+        if(relativeX > 0 && relativeX < canvas.width) {
+            paddleX = relativeX - paddleWidth / 2;
+        }
+    });
 
     function collisionDetection() {
         for (var c = 0; c < brickColumnCount; c++) {
             for (var r = 0; r < brickRowCount; r++) {
                 var b = bricks[c][r];
                 if (b.status == 1) {
-                    if (x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
+                    if (x > b.x && x < b.x + b.width && y > b.y && y < b.y + b.height) {
                         dy = -dy;
                         b.status = 0;
                         score++;
-                        // ደረጃ የማለፍ Logic
+                        document.getElementById("scoreLabel").innerHTML = "ውጤት: " + score;
+                        
                         if (score == brickRowCount * brickColumnCount) {
                             stage++;
-                            speedMultiplier += 0.8; // ፍጥነት መጨመር
-                            if(brickRowCount < 6) brickRowCount++; // ጡብ መጨመር
-                            alert("Stage " + (stage-1) + " ተጠናቋል! ወደ Stage " + stage + " ይለፉ።");
+                            document.getElementById("stageLabel").innerHTML = "Stage: " + stage;
+                            if(brickRowCount < 6) brickRowCount++; 
+                            alert("Stage " + (stage-1) + " ተጠናቋል!");
+                            score = 0;
                             resetLevel();
                         }
                     }
@@ -128,29 +160,22 @@
         }
     }
 
-    function resetLevel() {
-        x = canvas.width / 2;
-        y = canvas.height - 30;
-        dx = speedMultiplier;
-        dy = -speedMultiplier;
-        paddleX = (canvas.width - paddleWidth) / 2;
-        score = 0;
-        initBricks();
-    }
-
     function drawBall() {
         ctx.beginPath();
         ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-        ctx.fillStyle = "#ff4d4d"; // የቀይ ቀለም
+        ctx.fillStyle = "#ff4d4d";
         ctx.fill();
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "#ff4d4d";
         ctx.closePath();
     }
 
     function drawPaddle() {
         ctx.beginPath();
-        ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+        ctx.rect(paddleX, canvas.height - paddleHeight - 5, paddleWidth, paddleHeight);
         ctx.fillStyle = "#ffffff";
         ctx.fill();
+        ctx.shadowBlur = 0;
         ctx.closePath();
     }
 
@@ -158,13 +183,10 @@
         for (var c = 0; c < brickColumnCount; c++) {
             for (var r = 0; r < brickRowCount; r++) {
                 if (bricks[c][r].status == 1) {
-                    var brickX = (c * (brickWidth + brickPadding)) + brickOffsetLeft;
-                    var brickY = (r * (brickHeight + brickPadding)) + brickOffsetTop;
-                    bricks[c][r].x = brickX;
-                    bricks[c][r].y = brickY;
+                    var b = bricks[c][r];
                     ctx.beginPath();
-                    ctx.rect(brickX, brickY, brickWidth, brickHeight);
-                    ctx.fillStyle = "#ffd700"; // የወርቅ ቀለም
+                    ctx.rect(b.x, b.y, b.width, b.height);
+                    ctx.fillStyle = "#ffd700";
                     ctx.fill();
                     ctx.closePath();
                 }
@@ -172,42 +194,46 @@
         }
     }
 
-    function drawStatus() {
-        ctx.font = "bold 16px Arial";
-        ctx.fillStyle = "#00f2fe";
-        ctx.fillText("ውጤት: " + score, 8, 20); // ስኮር ማሳያ
-        ctx.fillText("Stage: " + stage, canvas.width - 85, 20); // ስቴጅ ማሳያ
-    }
-
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawBricks();
         drawBall();
         drawPaddle();
-        drawStatus();
         collisionDetection();
 
         if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) dx = -dx;
         if (y + dy < ballRadius) dy = -dy;
-        else if (y + dy > canvas.height - ballRadius) {
+        else if (y + dy > canvas.height - ballRadius - 5) {
             if (x > paddleX && x < paddleX + paddleWidth) {
                 dy = -dy;
             } else {
-                alert("GAME OVER! የመጨረሻ ውጤት: " + score);
-                document.location.reload();
+                alert("GAME OVER!");
+                stage = 1;
+                score = 0;
+                brickRowCount = 3;
+                document.getElementById("scoreLabel").innerHTML = "ውጤት: 0";
+                document.getElementById("stageLabel").innerHTML = "Stage: 1";
+                resetLevel();
             }
         }
-
-        if (rightPressed && paddleX < canvas.width - paddleWidth) paddleX += 7;
-        else if (leftPressed && paddleX > 0) paddleX -= 7;
 
         x += dx;
         y += dy;
         requestAnimationFrame(draw);
     }
 
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            }
+        }
+    }
+
+    resetLevel();
     draw();
 </script>
-
 </body>
 </html>
